@@ -10,15 +10,44 @@ import { cn } from "@/lib/utils";
  * still frame for reduced-motion users, and follows the light/dark theme.
  */
 
-type Palette = { top: number[]; bottom: number[]; glow: number[]; line: number[]; lineAlpha: number };
+type Palette = {
+  top: number[];
+  bottom: number[];
+  glow: number[];
+  line: number[];
+  lineAlpha: number;
+  /** Two soft colour pools (aurora); strength 0 turns them off. */
+  auraA: number[];
+  auraB: number[];
+  auraStrength: number;
+};
 
 const rgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
 
 const PALETTE: Record<"light" | "dark", Palette> = {
   // Warm paper with sand-coloured contours.
-  light: { top: rgb("#f7f2e7"), bottom: rgb("#e3d9c6"), glow: rgb("#fffbf2"), line: rgb("#b9a57c"), lineAlpha: 0.42 },
-  // SabayRide night purple with faint brand-green contours.
-  dark: { top: rgb("#231d3f"), bottom: rgb("#110e21"), glow: rgb("#2f2756"), line: rgb("#3fae68"), lineAlpha: 0.24 },
+  light: {
+    top: rgb("#f7f2e7"),
+    bottom: rgb("#e3d9c6"),
+    glow: rgb("#fffbf2"),
+    line: rgb("#b9a57c"),
+    lineAlpha: 0.42,
+    auraA: rgb("#f3e3c0"),
+    auraB: rgb("#e9dcc4"),
+    auraStrength: 0.0,
+  },
+  // Deep night purple lit by a brand-green pool (bottom-left) and a violet one (top-right),
+  // with mint contours that read clearly without competing with the card.
+  dark: {
+    top: rgb("#1d1838"),
+    bottom: rgb("#0b0918"),
+    glow: rgb("#2c2554"),
+    line: rgb("#5fe0a0"),
+    lineAlpha: 0.3,
+    auraA: rgb("#1e8a52"),
+    auraB: rgb("#6d4bd6"),
+    auraStrength: 0.55,
+  },
 };
 
 const VERT = `
@@ -33,8 +62,8 @@ precision highp float;
 uniform vec2 uRes;
 uniform float uTime;
 uniform vec2 uPointer;
-uniform vec3 uTop, uBottom, uGlow, uLine;
-uniform float uLineAlpha;
+uniform vec3 uTop, uBottom, uGlow, uLine, uAuraA, uAuraB;
+uniform float uLineAlpha, uAuraStrength;
 
 vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
 vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
@@ -74,12 +103,25 @@ void main(){
   float v = h * 9.0;
   float d = abs(fract(v + 0.5) - 0.5);
   float w = fwidth(v);
-  float line = 1.0 - smoothstep(0.0, w * 1.15, d);
+  // Every fifth contour is an "index" line: a touch wider and brighter, like a real topo map.
+  float major = 1.0 - step(0.5, mod(floor(v + 0.5), 5.0));
+  float line = 1.0 - smoothstep(0.0, w * mix(1.15, 1.9, major), d);
+  float lineStrength = uLineAlpha * mix(1.0, 1.7, major);
 
   vec3 col = mix(uBottom, uTop, smoothstep(0.0, 1.0, uv.y));
   col = mix(col, uGlow, 0.55 * exp(-dot(p - vec2(0.0, 0.35), p - vec2(0.0, 0.35)) * 2.2));
+
+  // Slowly breathing colour pools.
+  vec2 a = vec2(-0.75 + 0.08 * sin(t * 0.13), -0.45 + 0.06 * cos(t * 0.11));
+  vec2 b = vec2(0.8 + 0.07 * cos(t * 0.09), 0.5 + 0.08 * sin(t * 0.12));
+  float ga = exp(-dot(p - a, p - a) * 1.6);
+  float gb = exp(-dot(p - b, p - b) * 1.9);
+  col += (uAuraA * ga + uAuraB * gb) * uAuraStrength * 0.6;
+
   float vignette = smoothstep(1.25, 0.25, length(p));
-  col = mix(col, uLine, line * uLineAlpha * (0.45 + 0.55 * vignette));
+  // Lines pick up a little of the aura colour where they cross it.
+  vec3 lineCol = uLine + (uAuraA * ga + uAuraB * gb) * uAuraStrength * 0.5;
+  col = mix(col, lineCol, line * lineStrength * (0.45 + 0.55 * vignette));
   gl_FragColor = vec4(col, 1.0);
 }
 `;
@@ -129,6 +171,7 @@ export function ContourBackground({ className }: { className?: string }) {
     const u = (n: string) => gl.getUniformLocation(prog, n);
     const uRes = u("uRes"), uTime = u("uTime"), uPointer = u("uPointer");
     const uTop = u("uTop"), uBottom = u("uBottom"), uGlow = u("uGlow"), uLine = u("uLine"), uLineAlpha = u("uLineAlpha");
+    const uAuraA = u("uAuraA"), uAuraB = u("uAuraB"), uAuraStrength = u("uAuraStrength");
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
@@ -154,6 +197,9 @@ export function ContourBackground({ className }: { className?: string }) {
       gl.uniform3fv(uGlow, p.glow);
       gl.uniform3fv(uLine, p.line);
       gl.uniform1f(uLineAlpha, p.lineAlpha);
+      gl.uniform3fv(uAuraA, p.auraA);
+      gl.uniform3fv(uAuraB, p.auraB);
+      gl.uniform1f(uAuraStrength, p.auraStrength);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
 
@@ -199,7 +245,7 @@ export function ContourBackground({ className }: { className?: string }) {
     <canvas
       ref={canvas}
       aria-hidden
-      className={cn("pointer-events-none block size-full bg-[#ece4d4] dark:bg-[#1a1530]", className)}
+      className={cn("pointer-events-none block size-full bg-[#ece4d4] dark:bg-[#141029]", className)}
     />
   );
 }
