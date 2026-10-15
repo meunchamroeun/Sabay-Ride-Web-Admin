@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, UserRound } from "lucide-react";
+import { FlaskConical, LogOut, UserRound } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { API_ENVIRONMENTS } from "@/config/env";
 import { useApiEnv } from "@/lib/api/api-env";
@@ -10,6 +10,8 @@ import { initials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/common/language-switcher";
 import { ThemeToggle } from "@/components/common/theme-toggle";
+import { BrandMark } from "@/components/common/brand";
+import { NotificationBell } from "./notification-bell";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -30,9 +32,20 @@ export function Topbar() {
   const prod = apiEnv === "production";
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b bg-background/80 px-3 backdrop-blur-md sm:px-4">
-      <SidebarTrigger className="-ml-1" />
-      <Separator orientation="vertical" className="mx-1 h-5!" />
+    <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b bg-background/80 px-3 pt-[env(safe-area-inset-top)] backdrop-blur-md sm:px-4 [@supports(padding:env(safe-area-inset-top))]:h-[calc(3.5rem+env(safe-area-inset-top))]">
+      {/* Phones: app-style header with the logo; the menu lives in the bottom bar's "More". */}
+      <Link href="/" className="flex items-center gap-2 md:hidden">
+        <BrandMark className="size-8 rounded-lg" />
+        <span className="font-heading text-[15px] font-semibold">{t("app.name")}</span>
+      </Link>
+      <SidebarTrigger className="-ml-1 hidden md:inline-flex" />
+      <Separator orientation="vertical" className="mx-1 hidden h-5! md:block" />
+      {session?.demo ? (
+        <span className="hidden items-center gap-1.5 rounded-full bg-chart-3/15 px-2.5 py-0.5 text-[11px] font-medium text-violet-700 ring-1 ring-chart-3/30 ring-inset sm:inline-flex dark:text-violet-300">
+          <FlaskConical className="size-3" />
+          {t("app.env.demo")}
+        </span>
+      ) : (
       <span
         title={API_ENVIRONMENTS[apiEnv]}
         className={cn(
@@ -48,8 +61,10 @@ export function Topbar() {
         </span>
         {t(`app.env.${apiEnv}`)}
       </span>
+      )}
 
       <div className="ml-auto flex items-center gap-1.5">
+        <NotificationBell />
         <LanguageSwitcher />
         <ThemeToggle />
         <DropdownMenu>

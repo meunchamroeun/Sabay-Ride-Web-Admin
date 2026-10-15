@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { Pie, PieChart, Cell } from "recharts";
 import {
   ArrowUpRight,
+  Bike,
   BadgeDollarSign,
   CalendarCheck,
   CheckCircle2,
@@ -32,6 +33,8 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } f
 import { Skeleton } from "@/components/ui/skeleton";
 
 const GROUP_ICON: Record<string, React.ElementType> = {
+  motorbikes: Bike,
+  fleet: Bike,
   shops: Store,
   users: Users,
   bookings: CalendarCheck,
@@ -53,18 +56,26 @@ export default function DashboardPage() {
   const dash = useQuery({ queryKey: ["admin-dashboard"], queryFn: adminApi.dashboard });
   const queue = useQuery({ queryKey: ["shops", "PENDING", 0, 5], queryFn: () => adminApi.shops("PENDING", 0, 5) });
   const reviews = useQuery({ queryKey: ["reviews", 0, 5], queryFn: () => adminApi.reviews(0, 5) });
-  const failed = useQuery({ queryKey: ["payouts", "FAILED", 0], queryFn: () => adminApi.payouts("FAILED", 0, 1) });
+  const failed = useQuery({ queryKey: ["payouts", "FAILED", 0, 1], queryFn: () => adminApi.payouts("FAILED", 0, 1) });
 
   const groups = groupDashboard(dash.data);
   const gross = findMetric(groups, "grossBookingValue", "gross");
   const commission = findMetric(groups, "platformCommission", "commission");
   const failedCount = findMetric(groups, "failedCount")?.value ?? failed.data?.totalElements ?? 0;
 
-  const kpis: { key: string; icon: React.ElementType; metric?: Metric }[] = [
-    { key: "shops", icon: Store, metric: headline(groups.find((g) => g.key === "shops")) },
-    { key: "users", icon: Users, metric: headline(groups.find((g) => g.key === "users")) },
-    { key: "bookings", icon: CalendarCheck, metric: headline(groups.find((g) => g.key === "bookings")) },
-    { key: "revenue", icon: BadgeDollarSign, metric: commission ?? headline(groups.find((g) => g.key === "revenue")) },
+  // SRS §14.12: customers, shops (with pending), motorbikes, bookings; revenue and payouts below.
+  const group = (...keys: string[]) => groups.find((g) => keys.includes(g.key));
+  const pendingShops = findMetric(groups, "pending", "pendingVerification");
+  const kpis: { key: string; icon: React.ElementType; metric?: Metric; note?: string }[] = [
+    { key: "customers", icon: Users, metric: findMetric(groups, "customers", "totalCustomers") ?? headline(group("users")) },
+    {
+      key: "shops",
+      icon: Store,
+      metric: headline(group("shops")),
+      note: pendingShops ? t("dashboard.pendingShops", { count: pendingShops.value }) : undefined,
+    },
+    { key: "motorbikes", icon: Bike, metric: headline(group("motorbikes", "fleet")) },
+    { key: "bookings", icon: CalendarCheck, metric: headline(group("bookings")) },
   ];
 
   const fmt = (m: Metric) => (n: number) => (m.money ? formatUsd(n, lng) : formatNumber(n, lng));
@@ -88,14 +99,14 @@ export default function DashboardPage() {
       ) : (
         <>
           {/* KPI row */}
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
             {kpis.map((k, i) => (
               <motion.div key={k.key} {...fade(i)}>
                 <Card className="relative h-full overflow-hidden">
-                  <div className="absolute -top-8 -right-8 size-28 rounded-full bg-primary/5" />
+                  <div className="absolute -top-8 -right-8 hidden size-28 rounded-full bg-primary/5 sm:block" />
                   <CardHeader>
                     <CardDescription className="self-center font-medium">
-                      {k.key === "revenue" && commission ? t("dashboard.commission") : t(`dashboard.groups.${k.key}`)}
+                      {t(`dashboard.groups.${k.key}`)}
                     </CardDescription>
                     <CardAction>
                       <div className="grid size-9 place-items-center rounded-xl bg-primary/10 text-primary">
@@ -111,10 +122,10 @@ export default function DashboardPage() {
                         <AnimatedNumber
                           value={k.metric.value}
                           format={fmt(k.metric)}
-                          className="font-heading text-3xl font-semibold tabular tracking-tight"
+                          className="font-heading text-2xl font-semibold tabular tracking-tight sm:text-3xl"
                         />
                         <p className="mt-1 truncate text-xs text-muted-foreground">
-                          {k.metric.money ? t("money.khr", { value: formatKhr(k.metric.value, lng) }) : k.metric.label}
+                          {k.note ?? (k.metric.money ? t("money.khr", { value: formatKhr(k.metric.value, lng) }) : t(`dashboard.metric.${k.metric.key}`, { defaultValue: k.metric.label }))}
                         </p>
                       </>
                     ) : (
@@ -297,7 +308,7 @@ function PayoutHealthCard({ failedCount, loading }: { failedCount: number; loadi
       >
         <CardHeader>
           <CardTitle>{t("dashboard.payoutHealth")}</CardTitle>
-          <CardDescription>FR-79</CardDescription>
+          <CardDescription>{t("dashboard.payoutHealthHint")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-start gap-4">
           {loading ? (
@@ -346,7 +357,7 @@ function GroupCard({ group, index }: { group: MetricGroup; index: number }) {
           {group.metrics.map((m) => (
             <div key={m.key} className="space-y-1.5">
               <div className="flex items-baseline justify-between gap-3 text-sm">
-                <span className="truncate text-muted-foreground">{m.label}</span>
+                <span className="truncate text-muted-foreground">{t(`dashboard.metric.${m.key}`, { defaultValue: m.label })}</span>
                 <span className="font-medium tabular">{m.money ? formatUsd(m.value, lng) : formatNumber(m.value, lng)}</span>
               </div>
               {!m.money && (

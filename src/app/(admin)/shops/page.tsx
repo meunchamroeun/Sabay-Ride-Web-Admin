@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
@@ -22,19 +23,33 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const STATUSES: ShopStatus[] = ["PENDING", "VERIFIED", "SUSPENDED", "REJECTED"];
 const PAGE_SIZE = 20;
 
-export default function ShopsPage() {
+export default function ShopsPageRoute() {
+  // useSearchParams needs a Suspense boundary for the static build.
+  return (
+    <Suspense>
+      <ShopsPage />
+    </Suspense>
+  );
+}
+
+function ShopsPage() {
   const { t, i18n } = useTranslation();
   const [status, setStatus] = useState<ShopStatus>("PENDING");
   const [page, setPage] = useState(0);
   const [q, setQ] = useState("");
-  // Deep link from the dashboard queue: /shops?open=<id>. Admin pages render client-side only
-  // (the layout waits for the session), so reading the URL in the initializer is safe.
-  const [openId, setOpenId] = useState<string | null>(() =>
-    new URLSearchParams(window.location.search).get("open"),
-  );
+  // Deep link (dashboard queue, notification bell): /shops?open=<id>. Read reactively so it also
+  // works when we are already on this page; closing the panel dismisses that link.
+  const openParam = useSearchParams().get("open");
+  const [selected, setSelected] = useState<string | null>(null);
+  const [dismissed, setDismissed] = useState<string | null>(null);
+  const openId = selected ?? (openParam && openParam !== dismissed ? openParam : null);
+  const setOpenId = (id: string | null) => {
+    setSelected(id);
+    if (!id) setDismissed(openParam);
+  };
 
   const query = useQuery({
-    queryKey: ["shops", status, page],
+    queryKey: ["shops", status, page, PAGE_SIZE],
     queryFn: () => adminApi.shops(status, page, PAGE_SIZE),
   });
 

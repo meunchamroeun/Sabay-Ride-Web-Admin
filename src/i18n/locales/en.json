@@ -4,7 +4,8 @@
     "tagline": "Admin Console",
     "env": {
       "staging": "Staging",
-      "production": "Production"
+      "production": "Production",
+      "demo": "Demo data"
     }
   },
   "nav": {
@@ -16,12 +17,25 @@
     "reviews": "Reviews",
     "content": "Content & support",
     "blog": "Travel blog",
-    "assistance": "Roadside assistance",
-    "notifications": "Notifications",
     "account": "Account",
     "profile": "Profile",
     "apiDocs": "API docs",
-    "soon": "Soon"
+    "soon": "Soon",
+    "bookings": "Bookings",
+    "motorbikes": "Motorbikes",
+    "users": "Users",
+    "reports": "Reports",
+    "audit": "Audit log",
+    "people": "People",
+    "insights": "Insights",
+    "mainMenu": "Main menu",
+    "short": {
+      "home": "Home",
+      "shops": "Shops",
+      "bookings": "Bookings",
+      "payouts": "Payouts",
+      "more": "More"
+    }
   },
   "common": {
     "search": "Search…",
@@ -53,7 +67,9 @@
     "comingSoonBody": "The backend team is still building this module. The screen will be wired up as soon as the endpoints ship.",
     "backendStatus": "Backend status",
     "requirement": "Requirement",
-    "forbidden": "Your account doesn't have permission for this (HTTP 403). An ADMIN role is required."
+    "forbidden": "Your account doesn't have permission for this (HTTP 403). An ADMIN role is required.",
+    "exportCsv": "Export CSV",
+    "all": "All"
   },
   "auth": {
     "title": "Sign In",
@@ -108,7 +124,35 @@
       "revenue": "Revenue",
       "payouts": "Payouts",
       "fleet": "Fleet",
-      "motorbikes": "Motorbikes"
+      "motorbikes": "Motorbikes",
+      "customers": "Customers"
+    },
+    "pendingShops_one": "{{count}} pending verification",
+    "pendingShops_other": "{{count}} pending verification",
+    "payoutHealthHint": "Failed payouts after three automatic retries",
+    "metric": {
+      "total": "Total",
+      "pending": "Pending",
+      "verified": "Verified",
+      "suspended": "Suspended",
+      "rejected": "Rejected",
+      "customers": "Customers",
+      "shopOwners": "Shop owners",
+      "staff": "Shop staff",
+      "admins": "Admins",
+      "active": "Active",
+      "maintenance": "Maintenance",
+      "inactive": "Inactive",
+      "completed": "Completed",
+      "pendingRequests": "Pending requests",
+      "cancelled": "Cancelled",
+      "expired": "Expired",
+      "grossBookingValue": "Gross booking value",
+      "platformCommission": "Platform commission",
+      "paidToShops": "Paid to shops",
+      "paidCount": "Paid",
+      "pendingCount": "Pending",
+      "failedCount": "Failed"
     }
   },
   "shops": {
@@ -147,7 +191,7 @@
     "address": "Address",
     "payoutSetup": "Payout setup & commission",
     "paymentSetupComplete": "Payment setup complete",
-    "paymentSetupHint": "Required before the shop can appear in search (FR-73).",
+    "paymentSetupHint": "Required before the shop can appear in search.",
     "sharePercent": "Shop share (%)",
     "sharePercentHint": "The shop's share of each rental. 90 means SabayRide keeps 10%.",
     "payoutEnabled": "Payouts enabled",
@@ -167,7 +211,8 @@
       "PAID": "Paid",
       "FAILED": "Failed",
       "EXPIRED": "Expired",
-      "REFUNDED": "Refunded"
+      "REFUNDED": "Refunded",
+      "NOT_APPLICABLE": "Not applicable"
     },
     "col": {
       "shop": "Shop",
@@ -213,12 +258,193 @@
     "passwordChanged": "Password changed",
     "passwordHint": "8–72 characters"
   },
-  "soon": {
-    "blog": "Create, edit, publish and unpublish Markdown travel posts (FR-65 – FR-67).",
-    "assistance": "Monitor roadside assistance requests raised during active rentals (FR-58 – FR-64).",
-    "notifications": "In-app, push and Telegram notification log (FR-16, FR-24, FR-85)."
-  },
   "money": {
     "khr": "≈ {{value}} ៛"
+  },
+  "pending": {
+    "title": "Waiting for the backend",
+    "body": "This screen is ready. Its data will appear as soon as the backend adds this feature."
+  },
+  "bookings": {
+    "title": "Bookings",
+    "subtitle": "Every booking across all shops, with payment split and status history.",
+    "searchPlaceholder": "Booking ID, customer, shop or plate",
+    "status": {
+      "PENDING": "Pending",
+      "CONFIRMED": "Confirmed",
+      "ACTIVE": "Active",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled",
+      "REJECTED": "Rejected",
+      "EXPIRED": "Expired"
+    },
+    "col": {
+      "booking": "Booking",
+      "customer": "Customer",
+      "shop": "Shop",
+      "dates": "Dates",
+      "status": "Status",
+      "total": "Total"
+    },
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "detail": "Booking detail",
+    "pickup": "Pickup",
+    "delivery": "Delivery",
+    "selfPickup": "Self-pickup at the shop",
+    "items": "Motorbikes",
+    "day": "day",
+    "money": "Payment",
+    "subtotal": "Subtotal",
+    "deliveryFee": "Delivery fee",
+    "paymentOption": "Payment option",
+    "payment": {
+      "PAY_NOW": "Pay now (full amount online)",
+      "PAY_AT_SHOP": "Pay at shop (commission online)"
+    },
+    "paidOnline": "Paid online",
+    "cashAtShop": "Cash at the shop",
+    "payoutToShop": "Payout to shop",
+    "payoutStatus": "Payout status",
+    "history": "Status history",
+    "system": "System"
+  },
+  "motorbikes": {
+    "title": "Motorbikes",
+    "subtitle": "Every motorbike unit listed by every shop.",
+    "availabilityNote": "Status is what the shop has set. Availability is not stored — it is calculated per date range from bookings, so it is not shown here.",
+    "status": {
+      "ACTIVE": "Active",
+      "MAINTENANCE": "Maintenance",
+      "INACTIVE": "Inactive"
+    },
+    "searchPlaceholder": "Model, plate, unit or shop",
+    "col": {
+      "motorbike": "Motorbike",
+      "plate": "Plate",
+      "shop": "Shop",
+      "type": "Type",
+      "status": "Status",
+      "price": "Price",
+      "added": "Added"
+    },
+    "unit": "Unit"
+  },
+  "users": {
+    "title": "Users",
+    "subtitle": "Customers, shop owners, staff and administrators. Suspend or reactivate accounts.",
+    "active": "Active",
+    "suspendedTab": "Suspended",
+    "allRoles": "All roles",
+    "role": {
+      "CUSTOMER": "Customer",
+      "SHOP_OWNER": "Shop owner",
+      "SHOP_STAFF": "Shop staff",
+      "ADMIN": "Admin"
+    },
+    "searchPlaceholder": "Name, phone or email",
+    "col": {
+      "user": "User",
+      "roles": "Roles",
+      "status": "Status",
+      "joined": "Joined",
+      "lastLogin": "Last sign-in"
+    },
+    "verified": "Phone verified",
+    "suspended": "{{name}} suspended",
+    "reactivated": "{{name}} reactivated",
+    "suspendTitle": "Suspend {{name}}",
+    "suspendHint": "The account can no longer sign in until it is reactivated. The reason is recorded in the audit log."
+  },
+  "reports": {
+    "title": "Reports",
+    "subtitle": "Daily, weekly and monthly platform reports.",
+    "range": "{{from}} – {{to}}",
+    "period": {
+      "DAILY": "Daily",
+      "WEEKLY": "Weekly",
+      "MONTHLY": "Monthly"
+    },
+    "completed": "Completed",
+    "otherBookings": "Other",
+    "cancelled": "Cancelled",
+    "bookings": "Bookings",
+    "completedCancelled": "Completed / cancelled",
+    "bookingsOverTime": "Bookings over time",
+    "periodHint": {
+      "DAILY": "Last 14 days",
+      "WEEKLY": "Last 12 weeks",
+      "MONTHLY": "Last 6 months"
+    },
+    "shopEarnings": "Shop earnings",
+    "shopEarningsHint": "Completed rentals per shop. Shops are paid at handover, so this is a report, not an invoice.",
+    "completedRentals": "Completed",
+    "grossRental": "Gross rental value",
+    "received": "Received by shop"
+  },
+  "audit": {
+    "title": "Audit log",
+    "subtitle": "Every create, update, delete, sign-in, verification and payout.",
+    "action": {
+      "CREATE": "Create",
+      "UPDATE": "Update",
+      "DELETE": "Delete",
+      "LOGIN": "Sign-in",
+      "VERIFY": "Verify",
+      "PAYOUT": "Payout"
+    },
+    "searchPlaceholder": "User or description",
+    "col": {
+      "time": "Time",
+      "action": "Action",
+      "user": "User",
+      "description": "Description",
+      "ip": "IP address"
+    }
+  },
+  "blog": {
+    "subtitle": "Travel articles for customers, written in Markdown. Only published posts appear in the app.",
+    "newPost": "New post",
+    "status": {
+      "DRAFT": "Draft",
+      "PUBLISHED": "Published"
+    },
+    "published": "Post published",
+    "unpublished": "Post moved back to draft",
+    "minimumNote": "{{count}} of 3 posts published. At least three articles should be live before the blog reaches customers.",
+    "publishedOn": "Published {{date}}",
+    "updatedOn": "Updated {{date}}",
+    "edit": "Edit",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "untitled": "Untitled post",
+    "saved": "Post saved",
+    "created": "Draft created",
+    "deleted": "Post deleted",
+    "fields": {
+      "title": "Title",
+      "slug": "URL slug",
+      "cover": "Cover image URL",
+      "content": "Content (Markdown)"
+    },
+    "write": "Write",
+    "preview": "Preview",
+    "markdownHint": "## Heading\n\nWrite in **Markdown** — lists, links and headings are supported.",
+    "delete": "Delete",
+    "saveDraft": "Save draft",
+    "deleteTitle": "Delete this post?",
+    "deleteHint": "\"{{title}}\" will be removed permanently."
+  },
+  "notify": {
+    "title": "Notifications",
+    "count_one": "{{count}} new",
+    "count_other": "{{count}} new",
+    "empty": "You're all caught up",
+    "payoutFailed": "Payout of {{amount}} failed",
+    "shopPending": "New shop waiting for approval",
+    "allShops_one": "{{count}} shop to review",
+    "allShops_other": "{{count}} shops to review",
+    "allPayouts_one": "{{count}} failed payout",
+    "allPayouts_other": "{{count}} failed payouts"
   }
 }

@@ -1,7 +1,21 @@
 import { api } from "./client";
+import { DEMO_USER, isDemoCredentials, resetDemo } from "./demo";
 import { tokenStore } from "./token-store";
 import type {
+  AdminBooking,
   AdminDashboard,
+  AdminMotorbike,
+  AdminUser,
+  AuditAction,
+  AuditLogEntry,
+  BlogPost,
+  BlogPostInput,
+  BlogStatus,
+  BookingStatus,
+  MotorbikeStatus,
+  PlatformReport,
+  ReportPeriod,
+  Role,
   AdminShop,
   AuthTokens,
   Page,
@@ -16,6 +30,10 @@ import type {
 /* Authentication — open endpoints */
 export const authApi = {
   async login(identifier: string, password: string) {
+    if (isDemoCredentials(identifier, password)) {
+      tokenStore.setDemo(DEMO_USER);
+      return null;
+    }
     const tokens = await api<AuthTokens>("/auth/login", {
       method: "POST",
       auth: false,
@@ -27,6 +45,10 @@ export const authApi = {
   async logout() {
     const s = tokenStore.get();
     tokenStore.clear();
+    if (s?.demo) {
+      resetDemo();
+      return;
+    }
     if (s) {
       await api<void>("/auth/logout", { method: "POST", auth: false, body: { refreshToken: s.refreshToken } }).catch(
         () => undefined,
@@ -41,8 +63,17 @@ export const profileApi = {
   me: () => api<Profile>("/users/me"),
   update: (body: Partial<Pick<Profile, "fullName" | "preferredLanguage">>) =>
     api<Profile>("/users/me", { method: "PATCH", body }),
-  changePassword: (currentPassword: string, newPassword: string) =>
-    api<void>("/users/me/password", { method: "POST", body: { currentPassword, newPassword } }),
+  /**
+   * Revokes every session and returns a fresh token pair (see API docs), so store it to keep
+   * this device signed in. The demo admin returns nothing and keeps its session.
+   */
+  async changePassword(currentPassword: string, newPassword: string) {
+    const tokens = await api<AuthTokens | undefined>("/users/me/password", {
+      method: "POST",
+      body: { currentPassword, newPassword },
+    });
+    if (tokens?.accessToken) tokenStore.setFromTokens(tokens, tokenStore.get()?.user);
+  },
 };
 
 /* Admin — Dashboard only */
@@ -73,4 +104,39 @@ export const publicApi = {
   shopPhotos: (shopId: string) => api<Photo[]>(`/shops/${shopId}/photos`, { auth: false }),
   shopReviews: (shopId: string, page = 0, size = 5) =>
     api<Page<Review>>(`/shops/${shopId}/reviews`, { auth: false, query: { page, size } }),
+};
+
+/*
+ * SRS admin screens without API endpoints yet (FR-37, 38, 40, 41, 65). Paths are the proposals in
+ * api-doc.md §10. The demo admin answers them; a real backend returns 404 until they are built,
+ * which the screens show as "waiting for the API".
+ */
+export const opsApi = {
+  bookings: (q: { status?: BookingStatus; q?: string; page?: number; size?: number }) =>
+    api<Page<AdminBooking>>("/admin/bookings", { query: { size: 20, ...q } }),
+  booking: (id: string) => api<AdminBooking>(`/admin/bookings/${id}`),
+
+  motorbikes: (q: { status?: MotorbikeStatus; q?: string; page?: number; size?: number }) =>
+    api<Page<AdminMotorbike>>("/admin/motorbikes", { query: { size: 20, ...q } }),
+
+  users: (q: { role?: Role; active?: boolean; q?: string; page?: number; size?: number }) =>
+    api<Page<AdminUser>>("/admin/users", { query: { size: 20, ...q } }),
+  suspendUser: (id: string, reason: string) =>
+    api<AdminUser>(`/admin/users/${id}/suspend`, { method: "POST", body: { reason } }),
+  reactivateUser: (id: string) => api<AdminUser>(`/admin/users/${id}/reactivate`, { method: "POST" }),
+
+  report: (period: ReportPeriod, from?: string, to?: string) =>
+    api<PlatformReport>("/admin/reports", { query: { period, from, to } }),
+
+  auditLogs: (q: { action?: AuditAction; q?: string; page?: number; size?: number }) =>
+    api<Page<AuditLogEntry>>("/admin/audit-logs", { query: { size: 25, ...q } }),
+
+  blogPosts: (q: { status?: BlogStatus; page?: number; size?: number }) =>
+    api<Page<BlogPost>>("/admin/blog/posts", { query: { size: 20, ...q } }),
+  createPost: (body: BlogPostInput) => api<BlogPost>("/admin/blog/posts", { method: "POST", body }),
+  updatePost: (id: string, body: Partial<BlogPostInput>) =>
+    api<BlogPost>(`/admin/blog/posts/${id}`, { method: "PATCH", body }),
+  publishPost: (id: string) => api<BlogPost>(`/admin/blog/posts/${id}/publish`, { method: "POST" }),
+  unpublishPost: (id: string) => api<BlogPost>(`/admin/blog/posts/${id}/unpublish`, { method: "POST" }),
+  deletePost: (id: string) => api<void>(`/admin/blog/posts/${id}`, { method: "DELETE" }),
 };

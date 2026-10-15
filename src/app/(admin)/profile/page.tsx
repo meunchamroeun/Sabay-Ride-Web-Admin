@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RequiredMark } from "@/components/common/required-mark";
 
 const errMsg = (e: unknown) => (e instanceof ApiError ? `${e.message} (${e.code})` : String(e));
 
@@ -108,7 +109,9 @@ export default function ProfilePage() {
               </CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5 sm:col-span-2">
-                  <Label htmlFor="fullName">{t("profile.fullName")}</Label>
+                  <Label htmlFor="fullName">
+                    {t("profile.fullName")} <RequiredMark />
+                  </Label>
                   <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} maxLength={150} />
                 </div>
                 <div className="space-y-1.5">
@@ -138,11 +141,15 @@ export default function ProfilePage() {
               </CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label htmlFor="cur">{t("profile.currentPassword")}</Label>
+                  <Label htmlFor="cur">
+                    {t("profile.currentPassword")} <RequiredMark />
+                  </Label>
                   <Input id="cur" type="password" autoComplete="current-password" value={cur} onChange={(e) => setCur(e.target.value)} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="next">{t("profile.newPassword")}</Label>
+                  <Label htmlFor="next">
+                    {t("profile.newPassword")} <RequiredMark />
+                  </Label>
                   <Input
                     id="next"
                     type="password"

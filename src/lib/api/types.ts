@@ -112,3 +112,154 @@ export interface ApiErrorBody {
   field?: string;
   timestamp?: string;
 }
+
+/* ---------------------------------------------------------------------------------------------
+ * Admin screens from SRS §14.4 / §14.8 that the API does not expose yet. Shapes follow the SRS
+ * data dictionary (§16) and the endpoint proposals in api-doc.md §10. The demo admin serves them
+ * today; with a real account the screens show "waiting for the API" until the endpoints exist.
+ * ------------------------------------------------------------------------------------------- */
+
+export type BookingStatus = "PENDING" | "CONFIRMED" | "REJECTED" | "EXPIRED" | "CANCELLED" | "ACTIVE" | "COMPLETED";
+export const BOOKING_STATUSES: BookingStatus[] = [
+  "PENDING", "CONFIRMED", "ACTIVE", "COMPLETED", "CANCELLED", "REJECTED", "EXPIRED",
+];
+
+export interface BookingItem {
+  motorbikeId: string;
+  model: string;
+  plateNumber: string;
+  pricePerDay: Money;
+  lineTotal: Money;
+  swappedFrom?: string;
+}
+
+export interface BookingHistoryEntry {
+  status: BookingStatus;
+  changedBy?: string;
+  note?: string;
+  changedAt: string;
+}
+
+export interface AdminBooking {
+  id: string;
+  customerName: string;
+  customerPhone?: string;
+  shopId: string;
+  shopName: string;
+  startDate: string;
+  endDate: string;
+  rentalDays: number;
+  status: BookingStatus;
+  paymentOption: "PAY_NOW" | "PAY_AT_SHOP";
+  pickupMethod: "SELF_PICKUP" | "DELIVERY";
+  deliveryAddress?: string;
+  subtotal: Money;
+  deliveryFee: Money;
+  total: Money;
+  amountOnline: Money;
+  amountCash: Money;
+  commissionAmount: Money;
+  payoutAmount: Money;
+  payoutStatus: "PENDING" | "PAID" | "FAILED" | "NOT_APPLICABLE";
+  items: BookingItem[];
+  history?: BookingHistoryEntry[];
+  createdAt: string;
+}
+
+export type MotorbikeStatus = "ACTIVE" | "MAINTENANCE" | "INACTIVE";
+
+export interface AdminMotorbike {
+  id: string;
+  shopId: string;
+  shopName: string;
+  plateNumber: string;
+  unitCode: string;
+  model: string;
+  brand: string;
+  type: string;
+  engineCc: number;
+  pricePerDay: Money;
+  status: MotorbikeStatus;
+  photoUrl?: string;
+  createdAt: string;
+}
+
+export interface AdminUser {
+  id: string;
+  fullName: string;
+  phone: string;
+  email?: string;
+  roles: Role[];
+  active: boolean;
+  phoneVerified: boolean;
+  createdAt: string;
+  lastLoginAt?: string;
+}
+
+export type AuditAction = "CREATE" | "UPDATE" | "DELETE" | "LOGIN" | "VERIFY" | "PAYOUT";
+export const AUDIT_ACTIONS: AuditAction[] = ["CREATE", "UPDATE", "DELETE", "LOGIN", "VERIFY", "PAYOUT"];
+
+export interface AuditLogEntry {
+  id: string;
+  userName: string;
+  userId?: string;
+  action: AuditAction;
+  entityName: string;
+  entityId: string;
+  description: string;
+  ipAddress: string;
+  createdAt: string;
+}
+
+export type BlogStatus = "DRAFT" | "PUBLISHED";
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  coverImageUrl?: string;
+  status: BlogStatus;
+  authorName: string;
+  publishedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type BlogPostInput = Pick<BlogPost, "title" | "slug" | "content" | "coverImageUrl">;
+
+export type ReportPeriod = "DAILY" | "WEEKLY" | "MONTHLY";
+
+export interface ReportRow {
+  label: string;
+  bookings: number;
+  completed: number;
+  cancelled: number;
+  grossBookingValue: Money;
+  platformCommission: Money;
+}
+
+export interface ShopReportRow {
+  shopId: string;
+  shopName: string;
+  completed: number;
+  grossBookingValue: Money;
+  platformCommission: Money;
+  received: Money;
+}
+
+export interface PlatformReport {
+  period: ReportPeriod;
+  from: string;
+  to: string;
+  totals: {
+    bookings: number;
+    completed: number;
+    cancelled: number;
+    grossBookingValue: Money;
+    platformCommission: Money;
+    paidToShops: Money;
+  };
+  series: ReportRow[];
+  shops: ShopReportRow[];
+}

@@ -39,6 +39,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { RequiredMark } from "@/components/common/required-mark";
 
 type ReasonAction = "reject" | "suspend";
 
@@ -259,7 +260,9 @@ export function ShopDetailSheet({
             {reasonFor === "suspend" && <DialogDescription>{t("shops.suspendHint")}</DialogDescription>}
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor="reason">{t("common.reason")}</Label>
+            <Label htmlFor="reason">
+              {t("common.reason")} <RequiredMark />
+            </Label>
             <Textarea
               id="reason"
               rows={4}
@@ -330,7 +333,9 @@ function PayoutForm({ shop }: { shop: AdminShop }) {
         <Switch checked={complete} onCheckedChange={setComplete} />
       </label>
       <div className="space-y-1.5">
-        <Label htmlFor="share">{t("shops.sharePercent")}</Label>
+        <Label htmlFor="share">
+          {t("shops.sharePercent")} <RequiredMark />
+        </Label>
         <Input
           id="share"
           inputMode="decimal"

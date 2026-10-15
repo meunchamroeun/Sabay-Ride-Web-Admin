@@ -14,6 +14,7 @@ import { AlertCircle, ArrowLeftRight, Info, ArrowRight, Eye, EyeOff, Loader2, Lo
 import { toast } from "sonner";
 import { API_ENV_NAMES, hostOf, type ApiEnv } from "@/config/env";
 import { setApiEnv, useApiEnv } from "@/lib/api/api-env";
+import { DEMO_ACCOUNT, DEMO_ENABLED } from "@/lib/api/demo";
 import { ApiError } from "@/lib/api/client";
 import { authApi } from "@/lib/api/endpoints";
 import { useAuth } from "@/lib/auth/auth-provider";
@@ -23,6 +24,7 @@ import { LanguageSelect } from "@/components/common/language-select";
 import { ContourBackground } from "@/components/common/contour-background";
 import { GoogleIcon, TelegramIcon } from "@/components/common/provider-icons";
 import { ThemeToggle } from "@/components/common/theme-toggle";
+import { RequiredMark } from "@/components/common/required-mark";
 
 gsap.registerPlugin(useGSAP);
 
@@ -32,7 +34,12 @@ const schema = z.object({
     .string()
     .trim()
     .min(1, "auth.identifierRequired")
-    .refine((v) => v.includes("@") ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) : /^\+?[\d\s-]{8,16}$/.test(v), "auth.identifierInvalid"),
+    .refine(
+      (v) =>
+        (DEMO_ENABLED && v.toLowerCase() === DEMO_ACCOUNT.identifier) ||
+        (v.includes("@") ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) : /^\+?[\d\s-]{8,16}$/.test(v)),
+      "auth.identifierInvalid",
+    ),
   password: z.string().min(1, "auth.passwordRequired"),
 });
 type FormValues = z.infer<typeof schema>;
@@ -200,7 +207,7 @@ export default function LoginPage() {
                   htmlFor="identifier"
                   className={cn("flex items-center gap-1.5 text-[12.5px] font-semibold", errors.identifier && "text-destructive")}
                 >
-                  <Mail className="size-3.5" /> {t("auth.identifier")} <span className="text-destructive">*</span>
+                  <Mail className="size-3.5" /> {t("auth.identifier")} <RequiredMark />
                 </label>
                 <div className={cn(fieldWrap, errors.identifier && fieldError)}>
                   <Mail className="size-4 shrink-0 text-muted-foreground" />
@@ -226,7 +233,7 @@ export default function LoginPage() {
                     htmlFor="password"
                     className={cn("text-[12.5px] font-semibold", errors.password && "text-destructive")}
                   >
-                    {t("auth.password")} <span className="text-destructive">*</span>
+                    {t("auth.password")} <RequiredMark />
                   </label>
                   <button
                     type="button"

@@ -8,6 +8,8 @@ export interface Session {
   /** epoch ms */
   expiresAt: number;
   user: AuthUser;
+  /** Demo admin session: requests are answered by the in-browser mock, never the real API. */
+  demo?: boolean;
 }
 
 type Listener = (s: Session | null) => void;
@@ -43,6 +45,20 @@ export const tokenStore = {
       refreshToken: t.refreshToken,
       expiresAt: Date.now() + (t.expiresIn ?? 900) * 1000,
       user: t.user ?? fallbackUser!,
+    };
+    safeStorage()?.setItem(KEY, JSON.stringify(session));
+    listeners.forEach((l) => l(session));
+    return session;
+  },
+
+  /** Starts a demo admin session (no real tokens). */
+  setDemo(user: AuthUser): Session {
+    const session: Session = {
+      accessToken: "demo-admin-token",
+      refreshToken: "demo-admin-token",
+      expiresAt: Date.now() + 365 * 86_400_000,
+      user,
+      demo: true,
     };
     safeStorage()?.setItem(KEY, JSON.stringify(session));
     listeners.forEach((l) => l(session));

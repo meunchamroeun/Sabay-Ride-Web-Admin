@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="km">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1f2230" media="(prefers-color-scheme: dark)" />
+    <title>SabayRide Admin — Offline</title>
+    <style>
+      :root { --bg: #f6f5fb; --card: #ffffff; --fg: #1d1b2e; --muted: #6b6880; --primary: #207d3c; --ring: #e5e3ef; }
+      @media (prefers-color-scheme: dark) {
+        :root { --bg: #15131f; --card: #1f1d2c; --fg: #f1f0f7; --muted: #a7a4ba; --primary: #4cc27a; --ring: #2c2a3b; }
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; margin: 0; }
+      body {
+        display: grid; place-items: center; padding: 24px;
+        padding-bottom: max(24px, env(safe-area-inset-bottom));
+        background: var(--bg); color: var(--fg);
+        font-family: "Kantumruy Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+      .card { width: 100%; max-width: 360px; text-align: center; background: var(--card); border: 1px solid var(--ring); border-radius: 24px; padding: 32px 24px; }
+      img { width: 64px; height: 64px; border-radius: 16px; }
+      h1 { font-size: 20px; margin: 18px 0 6px; }
+      p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
+      p + p { margin-top: 2px; }
+      button {
+        margin-top: 22px; width: 100%; height: 46px; border: 0; border-radius: 12px;
+        background: var(--primary); color: #fff; font: inherit; font-weight: 600; font-size: 15px; cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <img src="/icons/icon-192.png" alt="SabayRide" />
+      <h1>គ្មានអ៊ីនធឺណិត</h1>
+      <p>សូមពិនិត្យការតភ្ជាប់របស់អ្នក ហើយព្យាយាមម្តងទៀត។</p>
+      <p>You're offline. Check your connection and try again.</p>
+      <button type="button" onclick="location.reload()">ព្យាយាមម្តងទៀត · Try again</button>
+    </main>
+  </body>
+</html>

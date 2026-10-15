@@ -33,7 +33,7 @@ export default function PayoutsPage() {
   const status = filter === "ALL" ? undefined : filter;
 
   const query = useQuery({
-    queryKey: ["payouts", status ?? "ALL", page],
+    queryKey: ["payouts", status ?? "ALL", page, PAGE_SIZE],
     queryFn: () => adminApi.payouts(status, page, PAGE_SIZE),
   });
 

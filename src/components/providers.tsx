@@ -29,9 +29,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
     if (saved && saved !== i18n.language) setLocale(saved);
   }, []);
 
+  // PWA: register the service worker in production builds only (dev would serve stale files).
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator)) return;
+    navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => undefined);
+  }, []);
+
   return (
     <I18nextProvider i18n={i18n}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <TooltipProvider delayDuration={200}>
