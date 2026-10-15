@@ -20,6 +20,7 @@ import { useAuth } from "@/lib/auth/auth-provider";
 import { cn } from "@/lib/utils";
 import { BrandMark } from "@/components/common/brand";
 import { LanguageSelect } from "@/components/common/language-select";
+import { VantaNet } from "@/components/common/vanta-net";
 import { GoogleIcon, TelegramIcon } from "@/components/common/provider-icons";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 
@@ -121,8 +122,10 @@ export default function LoginPage() {
   return (
     <div
       ref={root}
-      className="relative flex min-h-dvh items-center justify-center bg-muted/40 p-0 sm:p-6 dark:bg-[#18191b] dark:bg-[radial-gradient(90%_70%_at_5%_50%,rgba(0,0,0,0.15)_0%,transparent_60%),radial-gradient(70%_60%_at_95%_50%,rgba(0,0,0,0.15)_0%,transparent_60%)]"
+      className="relative isolate flex min-h-dvh items-center justify-center overflow-hidden bg-[#f3f1fa] p-0 sm:p-6 dark:bg-[#1f1a37]"
     >
+      {/* Animated network background behind (not inside) the card */}
+      <VantaNet className="absolute inset-0 -z-10" />
       <div className="absolute top-4 right-4 z-10 flex items-center gap-1 rounded-lg border bg-background/80 p-0.5 backdrop-blur dark:bg-[#020817]/80">
         <LanguageSelect />
         <span className="h-4 w-px bg-border" />
