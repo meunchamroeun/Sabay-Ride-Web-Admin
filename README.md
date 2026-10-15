@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sabay-Ride-Web-Admin
 
-## Getting Started
+Web dashboard for SabayRide administrators (SRS v1.3, section 14.4). Shop owners and customers use the Flutter app; this console is admin-only.
 
-First, run the development server:
+**Stack:** Next.js 16 (App Router) · React 19 · Tailwind CSS v4 · shadcn/ui on Radix · TanStack Query · i18next (Khmer default, English) · GSAP · Framer Motion · Recharts
+
+## Run
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local   # choose staging or production
+npm install
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Backend
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Env | Base URL | Payments |
+| --- | --- | --- |
+| Staging | `https://sabayride-staging.cavkim.tech` | No QR, settles instantly — test flows here |
+| Production | `https://sabayride.cavkim.tech` | Real ABA KHQR, stays `PENDING` until paid |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The base URL lives only in `NEXT_PUBLIC_API_BASE_URL` (read in `src/config/env.ts`). Swagger: `<base>/swagger-ui.html`.
 
-## Learn More
+## Auth
 
-To learn more about Next.js, take a look at the following resources:
+- `POST /api/v1/auth/login` with `{ identifier, password }`; only accounts with the `ADMIN` role get in.
+- Access tokens last 15 minutes. `src/lib/api/client.ts` refreshes 60 s before expiry and retries once on `401`.
+- `POST /auth/refresh` is **single use** and replaying a spent token revokes every session, so refreshes are de-duplicated inside a tab (shared promise) and across tabs (Web Locks plus a storage re-check).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Screens → API
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Screen | Endpoints | SRS |
+| --- | --- | --- |
+| Dashboard | `GET /admin/dashboard`, `/admin/shops?status=PENDING`, `/admin/reviews`, `/admin/payouts?status=FAILED` | FR-39 |
+| Shops | `GET /admin/shops`, `GET /admin/shops/{id}`, `POST …/verify · reject · suspend · reactivate`, `PATCH …/payout` | FR-35 – FR-37, FR-73, FR-81 |
+| Payouts | `GET /admin/payouts`, `POST /admin/payouts/{id}/retry` | FR-78, FR-79 |
+| Reviews | `GET /admin/reviews` (read-only) | FR-38 |
+| Profile | `GET/PATCH /users/me`, `POST /users/me/password` | — |
+| Blog · Assistance · Notifications | *backend not built yet* — placeholder screens | FR-65, FR-58, FR-85 |
 
-## Deploy on Vercel
+`GET /admin/dashboard` has no published schema (springdoc name collision with the shop dashboard), so `src/lib/dashboard.ts` reads it structurally: every object it returns becomes a metric group, and `grossBookingValue`, `platformCommission` and `failedCount` drive the revenue and payout-health cards.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## i18n
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Strings live in `src/i18n/locales/{km,en}.json`. Khmer is the default; the choice is saved in `localStorage`. Font: Kantumruy Pro (Khmer and Latin).
