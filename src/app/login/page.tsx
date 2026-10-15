@@ -20,7 +20,7 @@ import { useAuth } from "@/lib/auth/auth-provider";
 import { cn } from "@/lib/utils";
 import { BrandMark } from "@/components/common/brand";
 import { LanguageSelect } from "@/components/common/language-select";
-import { VantaNet } from "@/components/common/vanta-net";
+import { ContourBackground } from "@/components/common/contour-background";
 import { GoogleIcon, TelegramIcon } from "@/components/common/provider-icons";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 
@@ -122,10 +122,10 @@ export default function LoginPage() {
   return (
     <div
       ref={root}
-      className="relative isolate flex min-h-dvh items-center justify-center overflow-hidden bg-[#f3f1fa] p-0 sm:p-6 dark:bg-[#1f1a37]"
+      className="relative isolate flex min-h-dvh items-center justify-center overflow-hidden bg-[#ece4d4] p-0 sm:p-6 dark:bg-[#1a1530]"
     >
-      {/* Animated network background behind (not inside) the card */}
-      <VantaNet className="absolute inset-0 -z-10" />
+      {/* Animated contour background behind (not inside) the card */}
+      <ContourBackground className="absolute inset-0 -z-10" />
       <div className="absolute top-4 right-4 z-10 flex items-center gap-1 rounded-lg border bg-background/80 p-0.5 backdrop-blur dark:bg-[#020817]/80">
         <LanguageSelect />
         <span className="h-4 w-px bg-border" />
