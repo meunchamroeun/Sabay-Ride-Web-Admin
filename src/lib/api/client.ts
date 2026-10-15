@@ -13,7 +13,7 @@ export class ApiError extends Error {
   }
 }
 
-const url = (path: string) => `${config.apiBaseUrl}${config.apiPrefix}${path}`;
+const url = (path: string) => `${config.proxyPath}${config.apiPrefix}${path}`;
 
 async function parse<T>(res: Response): Promise<T> {
   if (res.status === 204 || res.status === 202) return undefined as T;

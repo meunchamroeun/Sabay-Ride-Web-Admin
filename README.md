@@ -21,6 +21,12 @@ npm run dev                  # http://localhost:3000
 
 The base URL lives only in `NEXT_PUBLIC_API_BASE_URL` (read in `src/config/env.ts`). Swagger: `<base>/swagger-ui.html`.
 
+The browser never calls the API host directly: requests go to `/backend/api/v1/...` on the dashboard's own origin and `next.config.ts` rewrites them to the base URL. That avoids CORS, so the dashboard works on any Vercel or custom domain.
+
+## Deploy
+
+Hosted on Vercel (project `sabay-ride-web-admin`, connected to this repo; pushes to `main` deploy to production). Set `NEXT_PUBLIC_API_BASE_URL` and `NEXT_PUBLIC_API_ENV` in the Vercel project settings; they are read at build time, so redeploy after changing them.
+
 ## Auth
 
 - `POST /api/v1/auth/login` with `{ identifier, password }`; only accounts with the `ADMIN` role get in.

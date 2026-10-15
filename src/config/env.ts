@@ -17,6 +17,12 @@ export const config = {
   ).replace(/\/+$/, ""),
   apiEnv: envName,
   apiPrefix: "/api/v1",
+  /**
+   * Browser requests go to this same-origin path and next.config.ts rewrites them to apiBaseUrl.
+   * That keeps working on any domain (Vercel previews, custom domains) without the backend
+   * having to whitelist each origin for CORS.
+   */
+  proxyPath: "/backend",
   /** Refresh this many seconds before the access token expires (tokens live 15 min). */
   refreshSkewSeconds: 60,
   defaultLocale: "km" as const,
