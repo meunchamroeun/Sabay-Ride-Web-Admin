@@ -57,7 +57,7 @@
   },
   "auth": {
     "title": "ចូលគណនី",
-    "subtitle": "សូមស្វាគមន៍ — ចូលគណនីដើម្បីគ្រប់គ្រងទីផ្សារ SabayRide",
+    "subtitle": "សូមស្វាគមន៍ — បញ្ចូលព័ត៌មានគណនីដើម្បីបន្ត",
     "identifier": "លេខទូរស័ព្ទ ឬអ៊ីមែល",
     "identifierPlaceholder": "ទូរស័ព្ទ (+855…) ឬអ៊ីមែល",
     "password": "ពាក្យសម្ងាត់",
@@ -77,7 +77,14 @@
     "telegramReset": "កំណត់ឡើងវិញតាម Telegram",
     "forgotNeedsPhone": "សូមបញ្ចូលលេខទូរស័ព្ទ (+855…) ជាមុនសិន — លេខកូដនឹងផ្ញើទៅ Telegram។",
     "showPassword": "បង្ហាញពាក្យសម្ងាត់",
-    "hidePassword": "លាក់ពាក្យសម្ងាត់"
+    "hidePassword": "លាក់ពាក្យសម្ងាត់",
+    "otherService": "ឬប្រើសេវាផ្សេងទៀត",
+    "methodSoon": "ការចូលតាម {{name}} — នឹងមកដល់ឆាប់ៗ",
+    "switchServer": "ប្តូរម៉ាស៊ីនមេ",
+    "envSwitched": "កំពុងប្រើ {{env}} ({{host}})",
+    "identifierRequired": "សូមបញ្ចូលលេខទូរស័ព្ទ ឬអ៊ីមែលរបស់អ្នក",
+    "identifierInvalid": "សូមបញ្ចូលលេខទូរស័ព្ទ (+855…) ឬអ៊ីមែលឱ្យបានត្រឹមត្រូវ",
+    "passwordRequired": "សូមបញ្ចូលពាក្យសម្ងាត់"
   },
   "dashboard": {
     "title": "ផ្ទាំងព័ត៌មាន",

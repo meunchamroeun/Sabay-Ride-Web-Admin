@@ -1,4 +1,5 @@
 import { config } from "@/config/env";
+import { getApiEnv } from "./api-env";
 import { tokenStore, type Session } from "./token-store";
 import type { ApiErrorBody, AuthTokens } from "./types";
 
@@ -13,7 +14,7 @@ export class ApiError extends Error {
   }
 }
 
-const url = (path: string) => `${config.proxyPath}${config.apiPrefix}${path}`;
+const url = (path: string) => `${config.proxyPath}/${getApiEnv()}${config.apiPrefix}${path}`;
 
 async function parse<T>(res: Response): Promise<T> {
   if (res.status === 204 || res.status === 202) return undefined as T;

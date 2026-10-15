@@ -19,13 +19,13 @@ npm run dev                  # http://localhost:3000
 | Staging | `https://sabayride-staging.cavkim.tech` | No QR, settles instantly — test flows here |
 | Production | `https://sabayride.cavkim.tech` | Real ABA KHQR, stays `PENDING` until paid |
 
-The base URL lives only in `NEXT_PUBLIC_API_BASE_URL` (read in `src/config/env.ts`). Swagger: `<base>/swagger-ui.html`.
+Both URLs live in `src/config/env.ts`. `NEXT_PUBLIC_API_ENV` picks the default and `NEXT_PUBLIC_API_BASE_URL` can override that default's URL. Admins switch between Production and Staging by hovering the "Connected to" card on the login screen; the choice is remembered per browser and switching signs out, because tokens belong to one backend.
 
-The browser never calls the API host directly: requests go to `/backend/api/v1/...` on the dashboard's own origin and `next.config.ts` rewrites them to the base URL. That avoids CORS, so the dashboard works on any Vercel or custom domain.
+The browser never calls an API host directly: requests go to `/backend/<staging|production>/api/v1/...` on the dashboard's own origin and `next.config.ts` rewrites them to the matching host. That avoids CORS on any Vercel or custom domain.
 
 ## Deploy
 
-Hosted on Vercel (project `sabay-ride-web-admin`, connected to this repo; pushes to `main` deploy to production). Set `NEXT_PUBLIC_API_BASE_URL` and `NEXT_PUBLIC_API_ENV` in the Vercel project settings; they are read at build time, so redeploy after changing them.
+Hosted on Vercel (project `sabay-ride-web-admin`, connected to this repo; pushes to `main` deploy to production). Set `NEXT_PUBLIC_API_ENV` (and optionally `NEXT_PUBLIC_API_BASE_URL`) in the Vercel project settings; they are read at build time, so redeploy after changing them.
 
 ## Auth
 

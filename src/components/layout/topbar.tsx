@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { LogOut, UserRound } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { config } from "@/config/env";
+import { API_ENVIRONMENTS } from "@/config/env";
+import { useApiEnv } from "@/lib/api/api-env";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { initials } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -25,14 +26,15 @@ export function Topbar() {
   const { t } = useTranslation();
   const { session, logout } = useAuth();
   const user = session?.user;
-  const prod = config.apiEnv === "production";
+  const apiEnv = useApiEnv();
+  const prod = apiEnv === "production";
 
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b bg-background/80 px-3 backdrop-blur-md sm:px-4">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mx-1 h-5!" />
       <span
-        title={config.apiBaseUrl}
+        title={API_ENVIRONMENTS[apiEnv]}
         className={cn(
           "hidden items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium ring-1 ring-inset sm:inline-flex",
           prod
@@ -44,7 +46,7 @@ export function Topbar() {
           <span className="absolute inline-flex size-full animate-ping rounded-full bg-current opacity-60" />
           <span className="relative inline-flex size-1.5 rounded-full bg-current" />
         </span>
-        {t(`app.env.${config.apiEnv}`)}
+        {t(`app.env.${apiEnv}`)}
       </span>
 
       <div className="ml-auto flex items-center gap-1.5">

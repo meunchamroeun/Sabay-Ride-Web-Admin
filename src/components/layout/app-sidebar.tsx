@@ -16,7 +16,8 @@ import {
   Wallet,
 } from "lucide-react";
 import { adminApi } from "@/lib/api/endpoints";
-import { swaggerUrl } from "@/config/env";
+import { swaggerUrlFor } from "@/config/env";
+import { useApiEnv } from "@/lib/api/api-env";
 import { BrandMark } from "@/components/common/brand";
 import {
   Sidebar,
@@ -37,6 +38,7 @@ type Item = { href: string; key: string; icon: React.ElementType; badge?: number
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const apiEnv = useApiEnv();
   const { t } = useTranslation();
 
   // Small counters that tell the admin where work is waiting.
@@ -113,7 +115,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip={t("nav.apiDocs")}>
-              <a href={swaggerUrl} target="_blank" rel="noreferrer">
+              <a href={swaggerUrlFor(apiEnv)} target="_blank" rel="noreferrer">
                 <ExternalLink />
                 <span>{t("nav.apiDocs")}</span>
               </a>

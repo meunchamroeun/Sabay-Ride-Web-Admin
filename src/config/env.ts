@@ -1,27 +1,28 @@
 /**
- * Runtime configuration. The backend base URL lives here and only here —
- * switch between staging and production with NEXT_PUBLIC_API_BASE_URL.
+ * Runtime configuration. Backend base URLs live here and only here.
+ *
+ * NEXT_PUBLIC_API_ENV picks the default backend; NEXT_PUBLIC_API_BASE_URL overrides that
+ * default's URL. Admins can switch between staging and production on the login screen —
+ * the browser always calls /backend/<env>/… and next.config.ts proxies it to the right host.
  */
-export const API_ENVIRONMENTS = {
+type ApiEnvName = "staging" | "production";
+
+const defaultEnv: ApiEnvName = process.env.NEXT_PUBLIC_API_ENV === "production" ? "production" : "staging";
+const override = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, "");
+
+export const API_ENVIRONMENTS: Record<ApiEnvName, string> = {
   staging: "https://sabayride-staging.cavkim.tech",
   production: "https://sabayride.cavkim.tech",
-} as const;
+  ...(override ? { [defaultEnv]: override } : {}),
+};
 
-export type ApiEnv = keyof typeof API_ENVIRONMENTS;
-
-const envName = (process.env.NEXT_PUBLIC_API_ENV ?? "staging") as ApiEnv;
+export type ApiEnv = ApiEnvName;
+export const API_ENV_NAMES = Object.keys(API_ENVIRONMENTS) as ApiEnv[];
 
 export const config = {
-  apiBaseUrl: (
-    process.env.NEXT_PUBLIC_API_BASE_URL ?? API_ENVIRONMENTS[envName] ?? API_ENVIRONMENTS.staging
-  ).replace(/\/+$/, ""),
-  apiEnv: envName,
+  defaultApiEnv: defaultEnv,
   apiPrefix: "/api/v1",
-  /**
-   * Browser requests go to this same-origin path and next.config.ts rewrites them to apiBaseUrl.
-   * That keeps working on any domain (Vercel previews, custom domains) without the backend
-   * having to whitelist each origin for CORS.
-   */
+  /** Same-origin proxy root; avoids CORS on any domain the dashboard is served from. */
   proxyPath: "/backend",
   /** Refresh this many seconds before the access token expires (tokens live 15 min). */
   refreshSkewSeconds: 60,
@@ -33,4 +34,5 @@ export const config = {
 
 export type Locale = (typeof config.locales)[number];
 
-export const swaggerUrl = `${config.apiBaseUrl}/swagger-ui.html`;
+export const swaggerUrlFor = (env: ApiEnv) => `${API_ENVIRONMENTS[env]}/swagger-ui.html`;
+export const hostOf = (env: ApiEnv) => API_ENVIRONMENTS[env].replace(/^https?:\/\//, "");

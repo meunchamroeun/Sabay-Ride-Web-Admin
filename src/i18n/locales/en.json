@@ -57,7 +57,7 @@
   },
   "auth": {
     "title": "Sign In",
-    "subtitle": "Welcome back — sign in to manage the SabayRide marketplace",
+    "subtitle": "Welcome back — enter your credentials to continue",
     "identifier": "Phone or email",
     "identifierPlaceholder": "Phone (+855…) or email",
     "password": "Password",
@@ -77,7 +77,14 @@
     "telegramReset": "Reset via Telegram",
     "forgotNeedsPhone": "Enter your phone number (+855…) first — the reset code is sent to its Telegram.",
     "showPassword": "Show password",
-    "hidePassword": "Hide password"
+    "hidePassword": "Hide password",
+    "otherService": "Or use another service",
+    "methodSoon": "{{name}} sign-in — coming soon",
+    "switchServer": "Switch server",
+    "envSwitched": "Now using {{env}} ({{host}})",
+    "identifierRequired": "Please enter your phone number or email",
+    "identifierInvalid": "Enter a valid phone number (+855…) or email",
+    "passwordRequired": "Password is required"
   },
   "dashboard": {
     "title": "Dashboard",
