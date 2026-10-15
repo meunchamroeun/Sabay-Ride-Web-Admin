@@ -122,7 +122,7 @@ export default function LoginPage() {
   return (
     <div
       ref={root}
-      className="relative isolate flex min-h-dvh items-center justify-center overflow-hidden bg-[#ece4d4] p-0 sm:p-6 dark:bg-[#141029]"
+      className="relative isolate flex min-h-dvh items-center justify-center overflow-hidden bg-[#ece4d4] p-0 sm:p-6 dark:bg-[#18191b]"
     >
       {/* Animated contour background behind (not inside) the card */}
       <ContourBackground className="absolute inset-0 -z-10" />

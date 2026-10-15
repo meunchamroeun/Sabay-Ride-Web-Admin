@@ -20,6 +20,8 @@ type Palette = {
   auraA: number[];
   auraB: number[];
   auraStrength: number;
+  /** Opacity of a faint dot grid (0 = none). */
+  dots: number;
 };
 
 const rgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
@@ -35,18 +37,19 @@ const PALETTE: Record<"light" | "dark", Palette> = {
     auraA: rgb("#f3e3c0"),
     auraB: rgb("#e9dcc4"),
     auraStrength: 0.0,
+    dots: 0.0,
   },
-  // Deep night purple lit by a brand-green pool (bottom-left) and a violet one (top-right),
-  // with mint contours that read clearly without competing with the card.
+  // Neutral charcoal: no hue, barely-there grey contours and a faint dot grid.
   dark: {
-    top: rgb("#1d1838"),
-    bottom: rgb("#0b0918"),
-    glow: rgb("#2c2554"),
-    line: rgb("#5fe0a0"),
-    lineAlpha: 0.3,
-    auraA: rgb("#1e8a52"),
-    auraB: rgb("#6d4bd6"),
-    auraStrength: 0.55,
+    top: rgb("#1b1c1f"),
+    bottom: rgb("#151618"),
+    glow: rgb("#1e1f22"),
+    line: rgb("#3a3d44"),
+    lineAlpha: 0.55,
+    auraA: rgb("#000000"),
+    auraB: rgb("#000000"),
+    auraStrength: 0.0,
+    dots: 0.05,
   },
 };
 
@@ -63,7 +66,7 @@ uniform vec2 uRes;
 uniform float uTime;
 uniform vec2 uPointer;
 uniform vec3 uTop, uBottom, uGlow, uLine, uAuraA, uAuraB;
-uniform float uLineAlpha, uAuraStrength;
+uniform float uLineAlpha, uAuraStrength, uDots;
 
 vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
 vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
@@ -122,6 +125,11 @@ void main(){
   // Lines pick up a little of the aura colour where they cross it.
   vec3 lineCol = uLine + (uAuraA * ga + uAuraB * gb) * uAuraStrength * 0.5;
   col = mix(col, lineCol, line * lineStrength * (0.45 + 0.55 * vignette));
+
+  // Faint dot grid (pixel-spaced so it stays crisp at any size).
+  vec2 cell = mod(gl_FragCoord.xy, 48.0) - 24.0;
+  float grid = 1.0 - smoothstep(0.8, 1.6, length(cell));
+  col += vec3(grid * uDots);
   gl_FragColor = vec4(col, 1.0);
 }
 `;
@@ -171,7 +179,7 @@ export function ContourBackground({ className }: { className?: string }) {
     const u = (n: string) => gl.getUniformLocation(prog, n);
     const uRes = u("uRes"), uTime = u("uTime"), uPointer = u("uPointer");
     const uTop = u("uTop"), uBottom = u("uBottom"), uGlow = u("uGlow"), uLine = u("uLine"), uLineAlpha = u("uLineAlpha");
-    const uAuraA = u("uAuraA"), uAuraB = u("uAuraB"), uAuraStrength = u("uAuraStrength");
+    const uAuraA = u("uAuraA"), uAuraB = u("uAuraB"), uAuraStrength = u("uAuraStrength"), uDots = u("uDots");
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
@@ -200,6 +208,7 @@ export function ContourBackground({ className }: { className?: string }) {
       gl.uniform3fv(uAuraA, p.auraA);
       gl.uniform3fv(uAuraB, p.auraB);
       gl.uniform1f(uAuraStrength, p.auraStrength);
+      gl.uniform1f(uDots, p.dots);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
 
@@ -245,7 +254,7 @@ export function ContourBackground({ className }: { className?: string }) {
     <canvas
       ref={canvas}
       aria-hidden
-      className={cn("pointer-events-none block size-full bg-[#ece4d4] dark:bg-[#141029]", className)}
+      className={cn("pointer-events-none block size-full bg-[#ece4d4] dark:bg-[#18191b]", className)}
     />
   );
 }
