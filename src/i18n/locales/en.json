@@ -56,12 +56,12 @@
     "forbidden": "Your account doesn't have permission for this (HTTP 403). An ADMIN role is required."
   },
   "auth": {
-    "title": "Welcome back",
-    "subtitle": "Sign in to manage the SabayRide marketplace",
+    "title": "Sign In",
+    "subtitle": "Welcome back — sign in to manage the SabayRide marketplace",
     "identifier": "Phone or email",
-    "identifierPlaceholder": "+855 12 345 678",
+    "identifierPlaceholder": "Phone (+855…) or email",
     "password": "Password",
-    "signIn": "Sign in",
+    "signIn": "Sign In",
     "signingIn": "Signing in…",
     "forgot": "Forgot password?",
     "forgotSent": "If that number has an account, a reset code was sent to its Telegram.",
@@ -70,7 +70,14 @@
     "sessionExpired": "Your session expired. Please sign in again.",
     "heroTitle": "Every motorbike in Siem Reap, one dashboard.",
     "heroBody": "Verify shops, keep payouts healthy and watch the marketplace grow in real time.",
-    "connectedTo": "Connected to"
+    "connectedTo": "Connected to",
+    "adminWord": "Admin",
+    "tagline": "Secure · Trusted · Connected",
+    "otherOptions": "Other options",
+    "telegramReset": "Reset via Telegram",
+    "forgotNeedsPhone": "Enter your phone number (+855…) first — the reset code is sent to its Telegram.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "dashboard": {
     "title": "Dashboard",
