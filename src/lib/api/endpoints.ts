@@ -56,6 +56,9 @@ export const authApi = {
     }
   },
   forgot: (phone: string) => api<void>("/auth/password/forgot", { method: "POST", auth: false, body: { phone } }),
+  /** Sets a new password with the 6-digit Telegram code. Returns no tokens: sign in again afterwards. */
+  resetPassword: (phone: string, code: string, newPassword: string) =>
+    api<void>("/auth/password/reset", { method: "POST", auth: false, body: { phone, code, newPassword } }),
 };
 
 /* Profile — App and Dashboard */

@@ -32,6 +32,7 @@ Hosted on Vercel (project `sabay-ride-web-admin`, connected to this repo; pushes
 ## Auth
 
 - `POST /api/v1/auth/login` with `{ identifier, password }`; only accounts with the `ADMIN` role get in.
+- Forgot password: `POST /auth/password/forgot` sends a code to Telegram, then `POST /auth/password/reset` sets the new password.
 - Access tokens last 15 minutes. `src/lib/api/client.ts` refreshes 60 s before expiry and retries once on `401`.
 - `POST /auth/refresh` is **single use** and replaying a spent token revokes every session, so refreshes are de-duplicated inside a tab (shared promise) and across tabs (Web Locks plus a storage re-check).
 

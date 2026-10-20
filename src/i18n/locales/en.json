@@ -100,7 +100,20 @@
     "envSwitched": "Now using {{env}} ({{host}})",
     "identifierRequired": "Please enter your phone number or email",
     "identifierInvalid": "Enter a valid phone number (+855…) or email",
-    "passwordRequired": "Password is required"
+    "passwordRequired": "Password is required",
+    "reset": {
+      "title": "Reset password",
+      "hint": "Enter the 6-digit code sent to the Telegram linked to {{phone}}, then choose a new password.",
+      "code": "Reset code",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "submit": "Set new password",
+      "codeInvalid": "Enter the 6-digit code.",
+      "passwordLength": "Password must be 8 to 72 characters.",
+      "mismatch": "The passwords do not match.",
+      "codeWrong": "That code is wrong or has expired. Request a new one.",
+      "done": "Password changed. Sign in with your new password."
+    }
   },
   "dashboard": {
     "title": "Dashboard",

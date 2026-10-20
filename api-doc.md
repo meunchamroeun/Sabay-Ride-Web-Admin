@@ -120,7 +120,15 @@ Always `204`. The access token cannot be revoked and stays valid up to 15 minute
 { "phone": "+855…" }
 ```
 
-Always `202`. If the number has an account with Telegram linked, a reset code is sent there. The dashboard shows "Forgot password?" and "Reset via Telegram" on the login page.
+Always `202`. If the number has an account with Telegram linked, a reset code is sent there. On the login page, "Forgot password?" sends the code and then opens the reset step below.
+
+### 3.5.1 Reset password — `POST /api/v1/auth/password/reset`
+
+```json
+{ "phone": "+855…", "code": "123456", "newPassword": "at least 8 characters" }
+```
+
+`204` on success. It revokes every session and returns **no tokens**, so the admin signs in again with the new password. A wrong or expired code returns `400`.
 
 ### 3.6 Change password — `POST /api/v1/users/me/password`
 
@@ -279,7 +287,7 @@ Demo sessions never call the API. `src/lib/api/demo.ts` answers the same paths w
 | # | Request | Why |
 | --- | --- | --- |
 | 1 | An **ADMIN** account on staging (and later production). | The supplied test accounts are `CUSTOMER` / `SHOP_OWNER`; all `/admin/*` calls return `403` for them. |
-| 2 | A distinct OpenAPI schema for `GET /admin/dashboard`. | It currently collides with the shop dashboard's `Response` schema (§5). |
+| 2 | Distinct OpenAPI schema names for `GET /admin/dashboard` and `GET /admin/shops`. | Swagger shows the wrong shapes: the dashboard points to the shop dashboard's `Response`, and the shops list points to a `PageResponse` of reviews. Both are springdoc name collisions (same class name in different packages). |
 | 3 | The admin endpoints in **§10** (bookings, motorbikes, users, reports, audit log, blog). | The screens are built and call exactly these paths. |
 | 4 | `motorbikes` and `users.customers` in `GET /admin/dashboard`. | SRS §14.12 asks for total customers and total motorbikes on the admin dashboard. |
 | 5 | *(Optional)* CORS for the dashboard origin. | Only needed if you want the browser to call the API directly instead of through the proxy (§2). |

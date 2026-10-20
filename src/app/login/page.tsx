@@ -25,6 +25,7 @@ import { ContourBackground } from "@/components/common/contour-background";
 import { GoogleIcon, TelegramIcon } from "@/components/common/provider-icons";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { RequiredMark } from "@/components/common/required-mark";
+import { ResetPasswordDialog } from "./reset-password-dialog";
 
 gsap.registerPlugin(useGSAP);
 
@@ -51,6 +52,8 @@ export default function LoginPage() {
   const { login, session, isAdmin, ready, logout } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [showPw, setShowPw] = useState(false);
+  // Phone the reset code was sent to; opens the "enter code + new password" step.
+  const [resetPhone, setResetPhone] = useState<string | null>(null);
   const root = useRef<HTMLDivElement>(null);
 
   const form = useForm<FormValues>({
@@ -118,6 +121,7 @@ export default function LoginPage() {
     }
     await authApi.forgot(id).catch(() => undefined);
     toast.success(t("auth.forgotSent"));
+    setResetPhone(id);
   }
 
   // The API only supports phone/email + password today; social sign-in is announced, not faked.
@@ -301,6 +305,16 @@ export default function LoginPage() {
           </div>
         </main>
       </div>
+
+      <ResetPasswordDialog
+        phone={resetPhone}
+        onClose={() => setResetPhone(null)}
+        onDone={() => {
+          setResetPhone(null);
+          form.setValue("password", "");
+          form.setFocus("password");
+        }}
+      />
     </div>
   );
 }
