@@ -68,7 +68,7 @@ function AuditScreen() {
               setPage(0);
             }}
           >
-            <TabsList className="h-auto flex-wrap justify-start">
+            <TabsList>
               <TabsTrigger value="ALL">{t("common.all")}</TabsTrigger>
               {AUDIT_ACTIONS.map((a) => (
                 <TabsTrigger key={a} value={a}>

@@ -64,16 +64,17 @@ export default function DashboardPage() {
   // SRS §14.12: customers, shops (with pending), motorbikes, bookings; revenue and payouts below.
   const group = (...keys: string[]) => groups.find((g) => keys.includes(g.key));
   const pendingShops = findMetric(groups, "pending", "pendingVerification");
-  const kpis: { key: string; icon: React.ElementType; metric?: Metric; note?: string }[] = [
-    { key: "customers", icon: Users, metric: findMetric(groups, "customers", "totalCustomers") ?? headline(group("users")) },
+  const kpis: { key: string; href: string; icon: React.ElementType; metric?: Metric; note?: string }[] = [
+    { key: "customers", href: "/users", icon: Users, metric: findMetric(groups, "customers", "totalCustomers") ?? headline(group("users")) },
     {
       key: "shops",
+      href: "/shops",
       icon: Store,
       metric: headline(group("shops")),
       note: pendingShops ? t("dashboard.pendingShops", { count: pendingShops.value }) : undefined,
     },
-    { key: "motorbikes", icon: Motorbike, metric: headline(group("motorbikes", "fleet")) },
-    { key: "bookings", icon: CalendarCheck, metric: headline(group("bookings")) },
+    { key: "motorbikes", href: "/motorbikes", icon: Motorbike, metric: headline(group("motorbikes", "fleet")) },
+    { key: "bookings", href: "/bookings", icon: CalendarCheck, metric: headline(group("bookings")) },
   ];
 
   const fmt = (m: Metric) => (n: number) => (m.money ? formatUsd(n, lng) : formatNumber(n, lng));
@@ -100,37 +101,43 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
             {kpis.map((k, i) => (
               <motion.div key={k.key} {...fade(i)}>
-                <Card className="relative h-full overflow-hidden">
-                  <div className="absolute -top-8 -right-8 hidden size-28 rounded-full bg-primary/5 sm:block" />
-                  <CardHeader>
-                    <CardDescription className="self-center font-medium">
-                      {t(`dashboard.groups.${k.key}`)}
-                    </CardDescription>
-                    <CardAction>
-                      <div className="grid size-9 place-items-center rounded-xl bg-primary/10 text-primary">
-                        <k.icon className="size-4" />
-                      </div>
-                    </CardAction>
-                  </CardHeader>
-                  <CardContent>
-                    {dash.isLoading ? (
-                      <Skeleton className="h-8 w-24" />
-                    ) : k.metric ? (
-                      <>
-                        <AnimatedNumber
-                          value={k.metric.value}
-                          format={fmt(k.metric)}
-                          className="font-heading text-2xl font-semibold tabular tracking-tight sm:text-3xl"
-                        />
-                        <p className="mt-1 truncate text-xs text-muted-foreground">
-                          {k.note ?? (k.metric.money ? t("money.khr", { value: formatKhr(k.metric.value, lng) }) : t(`dashboard.metric.${k.metric.key}`, { defaultValue: k.metric.label }))}
-                        </p>
-                      </>
-                    ) : (
-                      <span className="text-3xl font-semibold text-muted-foreground">—</span>
-                    )}
-                  </CardContent>
-                </Card>
+                <Link
+                  href={k.href}
+                  className="group block h-full rounded-xl focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                >
+                  <Card className="relative h-full overflow-hidden transition-[border-color,box-shadow,translate] group-hover:-translate-y-0.5 group-hover:border-primary/40 group-hover:shadow-md">
+                    <div className="absolute -top-8 -right-8 hidden size-28 rounded-full bg-primary/5 sm:block" />
+                    <CardHeader>
+                      <CardDescription className="self-center font-medium">
+                        {t(`dashboard.groups.${k.key}`)}
+                      </CardDescription>
+                      <CardAction className="flex items-center gap-1.5">
+                        <ArrowUpRight className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" />
+                        <div className="grid size-9 place-items-center rounded-xl bg-primary/10 text-primary">
+                          <k.icon className="size-4" />
+                        </div>
+                      </CardAction>
+                    </CardHeader>
+                    <CardContent>
+                      {dash.isLoading ? (
+                        <Skeleton className="h-8 w-24" />
+                      ) : k.metric ? (
+                        <>
+                          <AnimatedNumber
+                            value={k.metric.value}
+                            format={fmt(k.metric)}
+                            className="font-heading text-2xl font-semibold tabular tracking-tight sm:text-3xl"
+                          />
+                          <p className="mt-1 truncate text-xs text-muted-foreground">
+                            {k.note ?? (k.metric.money ? t("money.khr", { value: formatKhr(k.metric.value, lng) }) : t(`dashboard.metric.${k.metric.key}`, { defaultValue: k.metric.label }))}
+                          </p>
+                        </>
+                      ) : (
+                        <span className="text-3xl font-semibold text-muted-foreground">—</span>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Link>
               </motion.div>
             ))}
           </div>

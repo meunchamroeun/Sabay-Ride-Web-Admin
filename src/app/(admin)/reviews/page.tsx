@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
+import { ChevronRight, Star, Store } from "lucide-react";
+import type { Review } from "@/lib/api/types";
 import { adminApi } from "@/lib/api/endpoints";
 import { formatDate, initials } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -12,14 +13,16 @@ import { PageHeader } from "@/components/common/page-header";
 import { Pager } from "@/components/common/pager";
 import { EmptyState, ErrorState } from "@/components/common/states";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ReviewDetailSheet, Stars } from "./review-detail-sheet";
 
 const PAGE_SIZE = 12;
 
 export default function ReviewsPage() {
   const { t, i18n } = useTranslation();
   const [page, setPage] = useState(0);
+  const [open, setOpen] = useState<Review | null>(null);
   const query = useQuery({ queryKey: ["reviews", page, PAGE_SIZE], queryFn: () => adminApi.reviews(page, PAGE_SIZE) });
 
   const list = query.data?.content ?? [];
@@ -56,30 +59,35 @@ export default function ReviewsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
               >
-                <Card className="h-full">
-                  <CardContent className="flex h-full flex-col gap-3">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="size-9">
-                        <AvatarFallback className="bg-accent text-xs text-accent-foreground">
-                          {initials(r.customerName)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">{r.customerName}</p>
-                        <p className="truncate text-xs text-muted-foreground">→ {r.shopName}</p>
-                      </div>
-                      <div className="flex shrink-0 gap-0.5 text-amber-400">
-                        {Array.from({ length: 5 }).map((_, k) => (
-                          <Star key={k} className={cn("size-3.5", k < r.rating ? "fill-current" : "opacity-25")} />
-                        ))}
-                      </div>
+                <button
+                  type="button"
+                  onClick={() => setOpen(r)}
+                  aria-label={`${t("reviews.open")}: ${r.customerName}`}
+                  className="group flex h-full w-full flex-col gap-3 rounded-xl border bg-card p-5 text-left shadow-xs transition-[border-color,box-shadow,translate] hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                >
+                  <div className="flex items-start gap-3">
+                    <Avatar className="size-10 shrink-0">
+                      <AvatarFallback className="bg-accent text-xs text-accent-foreground">{initials(r.customerName)}</AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <p className="line-clamp-2 font-medium break-words" title={r.customerName}>
+                        {r.customerName}
+                      </p>
+                      <p className="mt-0.5 flex items-start gap-1 text-xs text-muted-foreground" title={r.shopName}>
+                        <Store className="mt-px size-3.5 shrink-0" />
+                        <span className="line-clamp-2 break-words">{r.shopName}</span>
+                      </p>
                     </div>
-                    <p className={cn("flex-1 text-sm", !r.comment && "text-muted-foreground italic")}>
-                      {r.comment || t("reviews.noComment")}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground">{formatDate(r.createdAt, i18n.language)}</p>
-                  </CardContent>
-                </Card>
+                    <ChevronRight className="mt-1 size-4 shrink-0 text-muted-foreground/50 transition-[translate,color] group-hover:translate-x-0.5 group-hover:text-primary" />
+                  </div>
+                  <p className={cn("line-clamp-3 flex-1 text-sm leading-relaxed", !r.comment && "text-muted-foreground italic")}>
+                    {r.comment || t("reviews.noComment")}
+                  </p>
+                  <div className="flex items-center justify-between gap-2 border-t pt-3">
+                    <Stars rating={r.rating} />
+                    <span className="text-[11px] text-muted-foreground">{formatDate(r.createdAt, i18n.language)}</span>
+                  </div>
+                </button>
               </motion.div>
             ))}
           </div>
@@ -88,6 +96,7 @@ export default function ReviewsPage() {
               <EmptyState />
             </Card>
           )}
+          <ReviewDetailSheet review={open} onClose={() => setOpen(null)} />
           {query.data && query.data.totalElements > PAGE_SIZE && (
             <Card className="py-0">
               <Pager page={page} size={PAGE_SIZE} total={query.data.totalElements} onChange={setPage} />

@@ -74,7 +74,7 @@ function ShopsPage() {
               setPage(0);
             }}
           >
-            <TabsList className="flex-wrap">
+            <TabsList>
               {STATUSES.map((s) => (
                 <TabsTrigger key={s} value={s}>
                   {t(`shops.status.${s}`)}

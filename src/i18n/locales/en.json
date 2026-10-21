@@ -252,7 +252,12 @@
       "date": "Date"
     },
     "average": "Average rating on this page",
-    "noComment": "No comment"
+    "noComment": "No comment",
+    "detail": "Review",
+    "booking": "Booking",
+    "viewShop": "View shop",
+    "readOnly": "Reviews are read-only: they cannot be edited, hidden or removed.",
+    "open": "Open review"
   },
   "profile": {
     "title": "Profile",

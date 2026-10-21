@@ -66,7 +66,7 @@ function BookingsScreen() {
             }}
             className="min-w-0"
           >
-            <TabsList className="h-auto flex-wrap justify-start">
+            <TabsList>
               <TabsTrigger value="ALL">{t("common.all")}</TabsTrigger>
               {BOOKING_STATUSES.map((s) => (
                 <TabsTrigger key={s} value={s}>

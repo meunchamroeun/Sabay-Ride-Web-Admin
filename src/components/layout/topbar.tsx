@@ -36,7 +36,7 @@ export function Topbar() {
       {/* Phones: app-style header with the logo; the menu lives in the bottom bar's "More". */}
       <Link href="/" className="flex items-center gap-2 md:hidden">
         <BrandMark className="size-8 rounded-lg" />
-        <span className="font-heading text-[15px] font-semibold">{t("app.name")}</span>
+        <span className="hidden font-heading text-[15px] font-semibold min-[360px]:inline">{t("app.name")}</span>
       </Link>
       <SidebarTrigger className="-ml-1 hidden md:inline-flex" />
       <Separator orientation="vertical" className="mx-1 hidden h-5! md:block" />
