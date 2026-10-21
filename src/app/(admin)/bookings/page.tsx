@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { Bike, Download, Search, Truck } from "lucide-react";
+import { Download, Search, Truck } from "lucide-react";
+import { Motorbike } from "@/components/common/motorbike-icon";
 import { opsApi } from "@/lib/api/endpoints";
 import { BOOKING_STATUSES, type BookingStatus } from "@/lib/api/types";
 import { downloadCsv } from "@/lib/csv";
@@ -134,7 +135,7 @@ export default function BookingsPage() {
                     <TableCell className="pl-4">
                       <p className="font-mono text-xs font-medium">#{shortId(b.id)}</p>
                       <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Bike className="size-3" />
+                        <Motorbike className="size-3" />
                         {b.items[0]?.model}
                         {b.items.length > 1 && ` +${b.items.length - 1}`}
                         {b.pickupMethod === "DELIVERY" && <Truck className="ml-1 size-3" />}

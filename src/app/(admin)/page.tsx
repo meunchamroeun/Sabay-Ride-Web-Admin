@@ -7,7 +7,6 @@ import { motion } from "framer-motion";
 import { Pie, PieChart, Cell } from "recharts";
 import {
   ArrowUpRight,
-  Bike,
   BadgeDollarSign,
   CalendarCheck,
   CheckCircle2,
@@ -18,6 +17,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
+import { Motorbike } from "@/components/common/motorbike-icon";
 import { adminApi } from "@/lib/api/endpoints";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { findMetric, groupDashboard, headline, type Metric, type MetricGroup } from "@/lib/dashboard";
@@ -33,8 +33,8 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } f
 import { Skeleton } from "@/components/ui/skeleton";
 
 const GROUP_ICON: Record<string, React.ElementType> = {
-  motorbikes: Bike,
-  fleet: Bike,
+  motorbikes: Motorbike,
+  fleet: Motorbike,
   shops: Store,
   users: Users,
   bookings: CalendarCheck,
@@ -74,7 +74,7 @@ export default function DashboardPage() {
       metric: headline(group("shops")),
       note: pendingShops ? t("dashboard.pendingShops", { count: pendingShops.value }) : undefined,
     },
-    { key: "motorbikes", icon: Bike, metric: headline(group("motorbikes", "fleet")) },
+    { key: "motorbikes", icon: Motorbike, metric: headline(group("motorbikes", "fleet")) },
     { key: "bookings", icon: CalendarCheck, metric: headline(group("bookings")) },
   ];
 

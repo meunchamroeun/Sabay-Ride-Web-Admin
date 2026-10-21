@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { Bike, Download, Info, Search } from "lucide-react";
+import { Download, Info, Search } from "lucide-react";
+import { Motorbike } from "@/components/common/motorbike-icon";
 import { opsApi } from "@/lib/api/endpoints";
 import type { MotorbikeStatus } from "@/lib/api/types";
 import { downloadCsv } from "@/lib/csv";
@@ -133,7 +134,7 @@ export default function MotorbikesPage() {
                     <TableCell className="pl-4">
                       <div className="flex items-center gap-3">
                         <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground">
-                          <Bike className="size-4" />
+                          <Motorbike className="size-4" />
                         </div>
                         <div className="min-w-0">
                           <p className="truncate font-medium">{m.model}</p>

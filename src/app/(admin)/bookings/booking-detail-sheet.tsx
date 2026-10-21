@@ -2,7 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Bike, CalendarRange, MapPin, Phone, Store, UserRound } from "lucide-react";
+import { CalendarRange, MapPin, Phone, Store, UserRound } from "lucide-react";
+import { Motorbike } from "@/components/common/motorbike-icon";
 import { opsApi } from "@/lib/api/endpoints";
 import { formatDate, formatKhr, formatUsd, shortId } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -69,7 +70,7 @@ export function BookingDetailSheet({ bookingId, onOpenChange }: { bookingId: str
                   {b.items.map((it) => (
                     <li key={it.motorbikeId} className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
                       <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground">
-                        <Bike className="size-4" />
+                        <Motorbike className="size-4" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-medium">{it.model}</p>

@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
-  Bike,
   BookOpenText,
   CalendarCheck,
   ChartColumn,
@@ -19,6 +18,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
+import { Motorbike } from "@/components/common/motorbike-icon";
 import { adminApi } from "@/lib/api/endpoints";
 import { swaggerUrlFor } from "@/config/env";
 import { useApiEnv } from "@/lib/api/api-env";
@@ -65,7 +65,7 @@ export function AppSidebar() {
       items: [
         { href: "/shops", key: "shops", icon: Store, badge: pending.data?.totalElements },
         { href: "/bookings", key: "bookings", icon: CalendarCheck },
-        { href: "/motorbikes", key: "motorbikes", icon: Bike },
+        { href: "/motorbikes", key: "motorbikes", icon: Motorbike },
         { href: "/payouts", key: "payouts", icon: Wallet, badge: failed.data?.totalElements },
         { href: "/reviews", key: "reviews", icon: MessageSquareQuote },
       ],

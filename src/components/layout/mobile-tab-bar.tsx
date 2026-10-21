@@ -7,7 +7,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import {
-  Bike,
   BookOpenText,
   CalendarCheck,
   ChartColumn,
@@ -21,6 +20,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
+import { Motorbike } from "@/components/common/motorbike-icon";
 import { adminApi } from "@/lib/api/endpoints";
 import { swaggerUrlFor } from "@/config/env";
 import { useApiEnv } from "@/lib/api/api-env";
@@ -36,7 +36,7 @@ const TABS = [
 
 // The remaining pages, shown in the "More" sheet that slides up from the bottom.
 const MORE = [
-  { href: "/motorbikes", key: "motorbikes", icon: Bike },
+  { href: "/motorbikes", key: "motorbikes", icon: Motorbike },
   { href: "/reviews", key: "reviews", icon: MessageSquareQuote },
   { href: "/users", key: "users", icon: Users },
   { href: "/reports", key: "reports", icon: ChartColumn },
