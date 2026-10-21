@@ -6,21 +6,11 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { ApiError } from "@/lib/api/client";
 import { opsApi } from "@/lib/api/endpoints";
 import type { BlogPost, BlogPostInput } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,7 +53,6 @@ function EditorBody({ post, onClose }: { post: BlogPost | null; onClose: () => v
   const [cover, setCover] = useState(post?.coverImageUrl ?? "");
   const [content, setContent] = useState(post?.content ?? "");
   const [fieldError, setFieldError] = useState<{ field?: string; message: string } | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const done = (msg: string) => {
     toast.success(msg);
@@ -83,7 +72,6 @@ function EditorBody({ post, onClose }: { post: BlogPost | null; onClose: () => v
     onSuccess: () => done(post ? t("blog.saved") : t("blog.created")),
     onError,
   });
-  const remove = useMutation({ mutationFn: () => opsApi.deletePost(post!.id), onSuccess: () => done(t("blog.deleted")), onError });
 
   const err = (f: string) => (fieldError?.field === f ? fieldError.message : null);
   const valid = title.trim() && slug.trim() && content.trim();
@@ -164,11 +152,6 @@ function EditorBody({ post, onClose }: { post: BlogPost | null; onClose: () => v
       </div>
 
       <div className="flex flex-wrap items-center gap-2 border-t bg-background p-4">
-        {post && (
-          <Button variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setConfirmDelete(true)}>
-            <Trash2 /> {t("blog.delete")}
-          </Button>
-        )}
         <span className="ml-auto" />
         <Button variant="outline" onClick={onClose}>
           {t("common.cancel")}
@@ -178,20 +161,6 @@ function EditorBody({ post, onClose }: { post: BlogPost | null; onClose: () => v
         </Button>
       </div>
 
-      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("blog.deleteTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>{t("blog.deleteHint", { title: post?.title })}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-            <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={() => remove.mutate()}>
-              {t("blog.delete")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

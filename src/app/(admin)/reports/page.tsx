@@ -19,10 +19,19 @@ import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartToo
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { WhenApiReady } from "@/components/common/coming-soon";
 
 const PERIODS: ReportPeriod[] = ["DAILY", "WEEKLY", "MONTHLY"];
 
 export default function ReportsPage() {
+  return (
+    <WhenApiReady feature="reports">
+      <ReportsScreen />
+    </WhenApiReady>
+  );
+}
+
+function ReportsScreen() {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
   const [period, setPeriod] = useState<ReportPeriod>("MONTHLY");

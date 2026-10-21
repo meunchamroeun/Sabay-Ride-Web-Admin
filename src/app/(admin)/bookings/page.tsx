@@ -4,11 +4,10 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { Download, Search, Truck } from "lucide-react";
+import { Search, Truck } from "lucide-react";
 import { Motorbike } from "@/components/common/motorbike-icon";
 import { opsApi } from "@/lib/api/endpoints";
 import { BOOKING_STATUSES, type BookingStatus } from "@/lib/api/types";
-import { downloadCsv } from "@/lib/csv";
 import { formatDate, formatKhr, formatUsd, shortId } from "@/lib/format";
 import { useDebounced } from "@/hooks/use-debounced";
 import { ApiPendingOrError } from "@/components/common/api-pending";
@@ -17,17 +16,25 @@ import { Pager } from "@/components/common/pager";
 import { EmptyState } from "@/components/common/states";
 import { StatusBadge } from "@/components/common/status-badge";
 import { BookingDetailSheet } from "./booking-detail-sheet";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { WhenApiReady } from "@/components/common/coming-soon";
 
 const PAGE_SIZE = 20;
 type Filter = BookingStatus | "ALL";
 
 export default function BookingsPage() {
+  return (
+    <WhenApiReady feature="bookings">
+      <BookingsScreen />
+    </WhenApiReady>
+  );
+}
+
+function BookingsScreen() {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
   const [filter, setFilter] = useState<Filter>("ALL");
@@ -42,28 +49,11 @@ export default function BookingsPage() {
     queryFn: () => opsApi.bookings({ status, q: search || undefined, page, size: PAGE_SIZE }),
   });
 
-  function exportCsv() {
-    const rows = query.data?.content ?? [];
-    downloadCsv(
-      `sabayride-bookings-${new Date().toISOString().slice(0, 10)}`,
-      ["Booking", "Customer", "Shop", "Start", "End", "Days", "Status", "Payment", "Pickup", "Total USD", "Online USD", "Cash USD", "Commission USD", "Payout status", "Created"],
-      rows.map((b) => [
-        b.id, b.customerName, b.shopName, b.startDate, b.endDate, b.rentalDays, b.status, b.paymentOption,
-        b.pickupMethod, b.total, b.amountOnline, b.amountCash, b.commissionAmount, b.payoutStatus, b.createdAt,
-      ]),
-    );
-  }
-
   return (
     <>
       <PageHeader
         title={t("bookings.title")}
         subtitle={t("bookings.subtitle")}
-        actions={
-          <Button variant="outline" size="sm" onClick={exportCsv} disabled={!query.data?.content.length}>
-            <Download className="size-3.5" /> {t("common.exportCsv")}
-          </Button>
-        }
       />
 
       <Card className="gap-0 overflow-hidden py-0">

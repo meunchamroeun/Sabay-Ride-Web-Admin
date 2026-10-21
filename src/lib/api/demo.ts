@@ -1,7 +1,7 @@
 /**
  * Demo admin: a mock backend that lives in the browser, so the dashboard can be tried before a
  * real ADMIN account exists. It answers the same paths and shapes as the API (see /v3/api-docs),
- * keeps changes (approve, suspend, payout retry…) in memory until the page is reloaded, and
+ * keeps changes (approve, reject, suspend, reactivate) in memory until the page is reloaded, and
  * never sends anything to the real servers.
  */
 import { ApiError } from "./errors";
@@ -323,33 +323,9 @@ async function handleDemo(method: string, path: string, query: URLSearchParams, 
     return strip(shop);
   }
 
-  if ((m = path.match(/^\/admin\/shops\/([^/]+)\/payout$/)) && method === "PATCH") {
-    const shop = findShop(m[1]);
-    const b = body as { paymentSetupComplete: boolean; payoutSharePercent?: number };
-    if (b.payoutSharePercent != null && (b.payoutSharePercent < 0 || b.payoutSharePercent > 100)) {
-      throw new ApiError(400, "VALIDATION_FAILED", "Share must be between 0 and 100.", "payoutSharePercent");
-    }
-    shop.paymentSetupComplete = b.paymentSetupComplete;
-    if (b.payoutSharePercent != null) shop.payoutSharePercent = b.payoutSharePercent;
-    shop.payoutEnabled = shop.status === "VERIFIED" && shop.paymentSetupComplete;
-    shop.visibleInSearch = shop.payoutEnabled;
-    return strip(shop);
-  }
-
   if (method === "GET" && path === "/admin/payouts") {
     const status = query.get("status");
     return page(d.payouts.filter((p) => !status || p.status === status), query);
-  }
-
-  if ((m = path.match(/^\/admin\/payouts\/([^/]+)\/retry$/)) && method === "POST") {
-    const row = d.payouts.find((p) => p.paymentId === m![1]);
-    if (!row) throw new ApiError(404, "PAYMENT_NOT_FOUND", "Payout not found.");
-    if (row.status === "PAID") throw new ApiError(409, "ALREADY_PAID", "This payout has already been paid.");
-    Object.assign(row, { status: "PAID", attempts: row.attempts + 1, failureReason: undefined });
-    const booking = d.ops.bookings.find((b) => b.id === row.bookingId);
-    if (booking) booking.payoutStatus = "PAID";
-    addAudit(d.ops, DEMO_USER.fullName, "PAYOUT", "payment", row.paymentId, `Retried payout of $${row.amount} to ${row.shopName}`);
-    return row;
   }
 
   if (method === "GET" && path === "/admin/reviews") return page(d.reviews, query);

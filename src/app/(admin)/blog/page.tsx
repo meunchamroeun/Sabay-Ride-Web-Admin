@@ -19,10 +19,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { WhenApiReady } from "@/components/common/coming-soon";
 
 type Filter = BlogStatus | "ALL";
 
 export default function BlogPage() {
+  return (
+    <WhenApiReady feature="blog">
+      <BlogScreen />
+    </WhenApiReady>
+  );
+}
+
+function BlogScreen() {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [filter, setFilter] = useState<Filter>("ALL");

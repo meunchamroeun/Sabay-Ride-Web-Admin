@@ -52,23 +52,30 @@ Until the backend team issues an ADMIN account, sign in on the login page with:
 | --- | --- |
 | `admin1` (or `+85500000001`) | `Demo1234!` |
 
-The demo answers every admin endpoint from sample data in the browser (`src/lib/api/demo.ts`): 10 shops, 16 payouts, 12 reviews and a dashboard. Approve, reject, suspend, payout setup and payout retry all work and stay until the page is reloaded or you sign out. Nothing is sent to the real servers, and the top bar shows a **Demo data** badge. Set `NEXT_PUBLIC_DEMO_ADMIN=false` to remove it once real admin accounts exist.
+The demo answers the admin endpoints that exist in the API from sample data in the browser (`src/lib/api/demo.ts`): 10 shops, 16 payouts, 12 reviews and a dashboard. Screens whose endpoints the API does not have yet show **Coming soon** for the demo too, so the demo never shows features the real API cannot back. Approve, reject, suspend, payout setup and payout retry all work and stay until the page is reloaded or you sign out. Nothing is sent to the real servers, and the top bar shows a **Demo data** badge. Set `NEXT_PUBLIC_DEMO_ADMIN=false` to remove it once real admin accounts exist.
 
 ## Screens → API
 
-| Screen | Endpoints | SRS |
-| --- | --- | --- |
-| Dashboard | `GET /admin/dashboard`, `/admin/shops?status=PENDING`, `/admin/reviews`, `/admin/payouts?status=FAILED` | FR-39 |
-| Shops | `GET /admin/shops`, `GET /admin/shops/{id}`, `POST …/verify · reject · suspend · reactivate`, `PATCH …/payout` | FR-35 – FR-37, FR-73, FR-81 |
-| Payouts | `GET /admin/payouts`, `POST /admin/payouts/{id}/retry` | FR-78, FR-79 |
-| Reviews | `GET /admin/reviews` (read-only) | FR-38 |
-| Bookings · Motorbikes | `GET /admin/bookings`, `GET /admin/motorbikes` *(proposed)* | FR-38, FR-50 |
-| Users | `GET /admin/users`, `POST …/suspend · reactivate` *(proposed)* | FR-37 |
-| Reports | `GET /admin/reports?period=` *(proposed)* + CSV export | FR-40 |
-| Audit log | `GET /admin/audit-logs` *(proposed)* | FR-41 |
-| Travel blog | `/admin/blog/posts` CRUD + publish *(proposed)* | FR-65 |
-| Profile | `GET/PATCH /users/me`, `POST /users/me/password` | — |
-| Notifications | *backend not built yet* — placeholder | FR-16, FR-85 |
+Checked against the live OpenAPI spec of Production and Staging (identical, 62 operations).
+
+| Screen | Status | Endpoints | SRS |
+| --- | --- | --- | --- |
+| Dashboard | ✅ Real data | `GET /admin/dashboard`, `/admin/shops?status=PENDING`, `/admin/reviews`, `/admin/payouts?status=FAILED` | FR-39 |
+| Shops | ✅ Real data | `GET /admin/shops`, `GET /admin/shops/{id}`, `POST …/verify · reject · suspend · reactivate` (payout status shown read-only) | FR-35 – FR-37, FR-73, FR-81 |
+| Payouts | ✅ Real data | `GET /admin/payouts` (view only; payouts and retries are automatic) | FR-78, FR-79 |
+| Reviews | ✅ Real data | `GET /admin/reviews` (read-only) | FR-38 |
+| Profile | ✅ Real data | `GET/PATCH /users/me`, `POST /users/me/password` | — |
+| Sign-in & password reset | ✅ Real data | `/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/password/forgot`, `/auth/password/reset` | — |
+| Bookings | ⏳ Coming soon | `GET /admin/bookings`, `GET /admin/bookings/{id}` *(not in API)* | FR-38, FR-50 |
+| Motorbikes | ⏳ Coming soon | `GET /admin/motorbikes` *(not in API)* — view only; shops add and edit motorbikes | FR-38 |
+| Users | ⏳ Coming soon | `GET /admin/users`, `POST …/suspend · reactivate` *(not in API)* | FR-37 |
+| Reports | ⏳ Coming soon | `GET /admin/reports?period=` + CSV export *(not in API)* | FR-40 |
+| Audit log | ⏳ Coming soon | `GET /admin/audit-logs` *(not in API)* | FR-41 |
+| Travel blog | ⏳ Coming soon | `/admin/blog/posts` CRUD + publish *(not in API)* | FR-65 |
+
+**Scope follows the SRS.** Features the SRS does not give the administrator are left out even when the API has them: editing a shop's payout account or commission (`PATCH /admin/shops/{id}/payout`, owner-only in §5.1), retrying payouts by hand (`POST /admin/payouts/{id}/retry`, automatic per FR-78/79), deleting blog posts (FR-65 lists create, edit, publish, unpublish), CSV export outside Reports (FR-40), social sign-in (FR-01/02), and alerts other than failed payouts (§10).
+
+"Coming soon" screens are fully built and switch on without code changes: when the backend ships one, add its key to `NEXT_PUBLIC_API_READY` (comma-separated: `bookings,motorbikes,users,reports,audit,blog`) in Vercel and redeploy. The list lives in `src/config/api-features.ts`.
 
 `GET /admin/dashboard` has no published schema (springdoc name collision with the shop dashboard), so `src/lib/dashboard.ts` reads it structurally: every object it returns becomes a metric group, and `grossBookingValue`, `platformCommission` and `failedCount` drive the revenue and payout-health cards.
 

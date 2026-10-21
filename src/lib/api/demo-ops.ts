@@ -333,7 +333,7 @@ export function buildOps(shops: OpsShop[], admin: { id: string; name: string }):
     });
   }
   bookings.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  // At least two payouts failed after their 3 retries, so the retry flow (FR-79) can be tried.
+  // At least two payouts failed after their 3 automatic retries, so the FR-79 flag shows up.
   const handedOver = bookings.filter((b) => b.payoutStatus === "PAID" || b.payoutStatus === "FAILED");
   for (const k of [1, 6]) if (handedOver[k]) handedOver[k].payoutStatus = "FAILED";
 
@@ -622,11 +622,6 @@ export function handleOps(
       Object.assign(post, { status: "DRAFT", updatedAt: now });
       addAudit(ops, admin.name, "UPDATE", "blog_post", post.id, `Unpublished "${post.title}"`);
       return post;
-    }
-    if (method === "DELETE") {
-      ops.blog.splice(ops.blog.indexOf(post), 1);
-      addAudit(ops, admin.name, "DELETE", "blog_post", post.id, `Deleted "${post.title}"`);
-      return undefined;
     }
   }
 

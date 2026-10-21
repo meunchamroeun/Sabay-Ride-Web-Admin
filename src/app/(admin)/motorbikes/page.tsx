@@ -4,11 +4,10 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { Download, Info, Search } from "lucide-react";
+import { Info, Search } from "lucide-react";
 import { Motorbike } from "@/components/common/motorbike-icon";
 import { opsApi } from "@/lib/api/endpoints";
 import type { MotorbikeStatus } from "@/lib/api/types";
-import { downloadCsv } from "@/lib/csv";
 import { formatDate, formatUsd } from "@/lib/format";
 import { useDebounced } from "@/hooks/use-debounced";
 import { ApiPendingOrError } from "@/components/common/api-pending";
@@ -16,18 +15,26 @@ import { PageHeader } from "@/components/common/page-header";
 import { Pager } from "@/components/common/pager";
 import { EmptyState } from "@/components/common/states";
 import { StatusBadge } from "@/components/common/status-badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { WhenApiReady } from "@/components/common/coming-soon";
 
 const PAGE_SIZE = 20;
 const STATUSES: MotorbikeStatus[] = ["ACTIVE", "MAINTENANCE", "INACTIVE"];
 type Filter = MotorbikeStatus | "ALL";
 
 export default function MotorbikesPage() {
+  return (
+    <WhenApiReady feature="motorbikes">
+      <MotorbikesScreen />
+    </WhenApiReady>
+  );
+}
+
+function MotorbikesScreen() {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
   const [filter, setFilter] = useState<Filter>("ALL");
@@ -41,24 +48,11 @@ export default function MotorbikesPage() {
     queryFn: () => opsApi.motorbikes({ status, q: search || undefined, page, size: PAGE_SIZE }),
   });
 
-  function exportCsv() {
-    downloadCsv(
-      `sabayride-motorbikes-${new Date().toISOString().slice(0, 10)}`,
-      ["Shop", "Unit", "Plate", "Model", "Brand", "Type", "CC", "Price/day USD", "Status", "Added"],
-      (query.data?.content ?? []).map((m) => [m.shopName, m.unitCode, m.plateNumber, m.model, m.brand, m.type, m.engineCc, m.pricePerDay, m.status, m.createdAt]),
-    );
-  }
-
   return (
     <>
       <PageHeader
         title={t("motorbikes.title")}
         subtitle={t("motorbikes.subtitle")}
-        actions={
-          <Button variant="outline" size="sm" onClick={exportCsv} disabled={!query.data?.content.length}>
-            <Download className="size-3.5" /> {t("common.exportCsv")}
-          </Button>
-        }
       />
 
       <div className="flex items-start gap-2 rounded-xl border border-dashed bg-muted/40 px-3 py-2 text-xs text-muted-foreground">

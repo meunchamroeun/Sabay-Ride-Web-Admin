@@ -33,6 +33,7 @@
       "home": "Home",
       "shops": "Shops",
       "bookings": "Bookings",
+      "reviews": "Reviews",
       "payouts": "Payouts",
       "more": "More"
     }
@@ -202,7 +203,7 @@
     "detail": "Shop detail",
     "contact": "Contact",
     "address": "Address",
-    "payoutSetup": "Payout setup & commission",
+    "payoutSetup": "Payout account",
     "paymentSetupComplete": "Payment setup complete",
     "paymentSetupHint": "Required before the shop can appear in search.",
     "sharePercent": "Shop share (%)",
@@ -459,5 +460,19 @@
     "allShops_other": "{{count}} shops to review",
     "allPayouts_one": "{{count}} failed payout",
     "allPayouts_other": "{{count}} failed payouts"
+  },
+  "soon": {
+    "badge": "Coming soon",
+    "title": "This page is coming soon",
+    "body": "The SabayRide API (Production and Staging) does not offer this yet. The page will show real data as soon as the backend adds the endpoints below.",
+    "needs": "Needs from the API",
+    "what": {
+      "bookings": "Every booking across all shops.",
+      "motorbikes": "Every motorbike listed by every shop (view only).",
+      "users": "Customers, shop owners and staff; suspend or reactivate accounts.",
+      "reports": "Daily, weekly and monthly platform reports with CSV export.",
+      "audit": "Every create, update, delete, sign-in and verification.",
+      "blog": "Travel articles for customers: write, publish and unpublish."
+    }
   }
 }

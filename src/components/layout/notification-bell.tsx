@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { BellRing, CheckCircle2, Store, TriangleAlert } from "lucide-react";
+import { BellRing, CheckCircle2, TriangleAlert } from "lucide-react";
 import { adminApi } from "@/lib/api/endpoints";
 import { formatDate, formatUsd } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -18,27 +18,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 /**
- * Top-bar alerts for things an admin must act on: shops waiting for verification and payouts
- * that failed after their automatic retries. Built from existing admin endpoints (the API has no
- * notification feed yet) and refreshed every minute.
+ * Top-bar alerts. The SRS (§10) notifies the administrator of one event only: a payout that
+ * still failed after its automatic retries (FR-79). The API has no notification feed, so the
+ * list is built from GET /admin/payouts?status=FAILED and refreshed every minute.
  */
 export function NotificationBell() {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
-  const shops = useQuery({
-    queryKey: ["shops", "PENDING", 0, 5],
-    queryFn: () => adminApi.shops("PENDING", 0, 5),
-    refetchInterval: 60_000,
-  });
   const payouts = useQuery({
     queryKey: ["payouts", "FAILED", 0, 5],
     queryFn: () => adminApi.payouts("FAILED", 0, 5),
     refetchInterval: 60_000,
   });
 
-  const pendingCount = shops.data?.totalElements ?? 0;
-  const failedCount = payouts.data?.totalElements ?? 0;
-  const total = pendingCount + failedCount;
+  const total = payouts.data?.totalElements ?? 0;
 
   return (
     <DropdownMenu>
@@ -65,7 +58,7 @@ export function NotificationBell() {
         <DropdownMenuSeparator className="m-0" />
 
         <div className="max-h-96 overflow-y-auto p-1.5">
-          {total === 0 && !shops.isLoading && !payouts.isLoading && (
+          {total === 0 && !payouts.isLoading && (
             <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
               <CheckCircle2 className="size-6 text-emerald-600 dark:text-emerald-300" />
               <p className="text-sm text-muted-foreground">{t("notify.empty")}</p>
@@ -87,33 +80,14 @@ export function NotificationBell() {
             </DropdownMenuItem>
           ))}
 
-          {shops.data?.content.map((s) => (
-            <DropdownMenuItem key={s.id} asChild className="items-start gap-3 rounded-lg p-2.5">
-              <Link href={`/shops?open=${s.id}`}>
-                <Icon tone="warning">
-                  <Store />
-                </Icon>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium">{t("notify.shopPending")}</span>
-                  <span className="block truncate text-xs text-muted-foreground">
-                    {s.name} · {s.city}
-                  </span>
-                  <span className="block text-[11px] text-muted-foreground">{formatDate(s.createdAt, lng, true)}</span>
-                </span>
-              </Link>
-            </DropdownMenuItem>
-          ))}
         </div>
 
         {total > 0 && (
           <>
             <DropdownMenuSeparator className="m-0" />
-            <div className="grid grid-cols-2 gap-1 p-1.5">
+            <div className="p-1.5">
               <DropdownMenuItem asChild className="justify-center rounded-lg text-xs font-medium">
-                <Link href="/shops">{t("notify.allShops", { count: pendingCount })}</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="justify-center rounded-lg text-xs font-medium">
-                <Link href="/payouts">{t("notify.allPayouts", { count: failedCount })}</Link>
+                <Link href="/payouts">{t("notify.allPayouts", { count: total })}</Link>
               </DropdownMenuItem>
             </div>
           </>

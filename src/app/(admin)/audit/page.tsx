@@ -4,10 +4,9 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { BadgeCheck, Download, LogIn, Pencil, Plus, Search, Trash2, Wallet } from "lucide-react";
+import { BadgeCheck, LogIn, Pencil, Plus, Search, Trash2, Wallet } from "lucide-react";
 import { opsApi } from "@/lib/api/endpoints";
 import { AUDIT_ACTIONS, type AuditAction } from "@/lib/api/types";
-import { downloadCsv } from "@/lib/csv";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useDebounced } from "@/hooks/use-debounced";
@@ -15,12 +14,12 @@ import { ApiPendingOrError } from "@/components/common/api-pending";
 import { PageHeader } from "@/components/common/page-header";
 import { Pager } from "@/components/common/pager";
 import { EmptyState } from "@/components/common/states";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { WhenApiReady } from "@/components/common/coming-soon";
 
 const PAGE_SIZE = 25;
 
@@ -34,6 +33,14 @@ const ACTION_STYLE: Record<AuditAction, { icon: React.ElementType; tone: string 
 };
 
 export default function AuditPage() {
+  return (
+    <WhenApiReady feature="audit">
+      <AuditScreen />
+    </WhenApiReady>
+  );
+}
+
+function AuditScreen() {
   const { t, i18n } = useTranslation();
   const [action, setAction] = useState<AuditAction | "ALL">("ALL");
   const [page, setPage] = useState(0);
@@ -45,24 +52,11 @@ export default function AuditPage() {
     queryFn: () => opsApi.auditLogs({ action: action === "ALL" ? undefined : action, q: search || undefined, page, size: PAGE_SIZE }),
   });
 
-  function exportCsv() {
-    downloadCsv(
-      `sabayride-audit-${new Date().toISOString().slice(0, 10)}`,
-      ["Time", "User", "Action", "Entity", "Entity ID", "Description", "IP address"],
-      (query.data?.content ?? []).map((a) => [a.createdAt, a.userName, a.action, a.entityName, a.entityId, a.description, a.ipAddress]),
-    );
-  }
-
   return (
     <>
       <PageHeader
         title={t("audit.title")}
         subtitle={t("audit.subtitle")}
-        actions={
-          <Button variant="outline" size="sm" onClick={exportCsv} disabled={!query.data?.content.length}>
-            <Download className="size-3.5" /> {t("common.exportCsv")}
-          </Button>
-        }
       />
 
       <Card className="gap-0 overflow-hidden py-0">

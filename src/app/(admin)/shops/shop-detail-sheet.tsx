@@ -31,13 +31,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { RequiredMark } from "@/components/common/required-mark";
 
@@ -176,7 +174,14 @@ export function ShopDetailSheet({
               </section>
 
               <Separator />
-              <PayoutForm key={`${s.id}:${s.paymentSetupComplete}:${s.payoutSharePercent}`} shop={s} />
+              {/* Payout account (FR-73): read-only, the shop owner manages it in the app */}
+              <section className="space-y-2">
+                <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("shops.payoutSetup")}</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <Mini label={t("shops.paymentSetupComplete")} value={s.paymentSetupComplete ? t("common.yes") : t("common.no")} />
+                  <Mini label={t("shops.payoutEnabled")} value={s.payoutEnabled ? t("common.yes") : t("common.no")} />
+                </div>
+              </section>
               <Separator />
 
               {/* Reviews */}
@@ -289,67 +294,6 @@ export function ShopDetailSheet({
         </DialogContent>
       </Dialog>
     </Sheet>
-  );
-}
-
-function PayoutForm({ shop }: { shop: AdminShop }) {
-  const { t } = useTranslation();
-  const qc = useQueryClient();
-  const [complete, setComplete] = useState(shop.paymentSetupComplete);
-  const [share, setShare] = useState(shop.payoutSharePercent != null ? String(shop.payoutSharePercent) : "90.00");
-
-  const shareNum = Number(share);
-  const invalid = share.trim() === "" || Number.isNaN(shareNum) || shareNum < 0 || shareNum > 100;
-  const dirty = complete !== shop.paymentSetupComplete || String(shop.payoutSharePercent ?? "") !== share;
-
-  const save = useMutation({
-    mutationFn: () => adminApi.payout(shop.id, { paymentSetupComplete: complete, payoutSharePercent: shareNum }),
-    onSuccess: (updated) => {
-      qc.setQueryData(["shop", updated.id], updated);
-      qc.invalidateQueries({ queryKey: ["shops"] });
-      toast.success(t("shops.payoutUpdated"));
-    },
-    onError: (e) => toast.error(e instanceof ApiError ? `${e.message} (${e.code})` : String(e)),
-  });
-
-  return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">{t("shops.payoutSetup")}</h3>
-        <span
-          className={cn(
-            "rounded-full px-2 py-0.5 text-[11px]",
-            shop.payoutEnabled ? "bg-success/15 text-emerald-700 dark:text-emerald-300" : "bg-muted text-muted-foreground",
-          )}
-        >
-          {t("shops.payoutEnabled")}: {shop.payoutEnabled ? t("common.yes") : t("common.no")}
-        </span>
-      </div>
-      <label className="flex items-start justify-between gap-4 rounded-xl border p-3">
-        <span>
-          <span className="block text-sm font-medium">{t("shops.paymentSetupComplete")}</span>
-          <span className="block text-xs text-muted-foreground">{t("shops.paymentSetupHint")}</span>
-        </span>
-        <Switch checked={complete} onCheckedChange={setComplete} />
-      </label>
-      <div className="space-y-1.5">
-        <Label htmlFor="share">
-          {t("shops.sharePercent")} <RequiredMark />
-        </Label>
-        <Input
-          id="share"
-          inputMode="decimal"
-          value={share}
-          onChange={(e) => setShare(e.target.value)}
-          aria-invalid={invalid}
-          className="tabular"
-        />
-        <p className="text-xs text-muted-foreground">{t("shops.sharePercentHint")}</p>
-      </div>
-      <Button onClick={() => save.mutate()} disabled={!dirty || invalid || save.isPending} size="sm">
-        {save.isPending && <Loader2 className="animate-spin" />} {t("common.save")}
-      </Button>
-    </section>
   );
 }
 

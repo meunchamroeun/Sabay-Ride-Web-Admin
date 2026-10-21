@@ -29,12 +29,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { RequiredMark } from "@/components/common/required-mark";
+import { WhenApiReady } from "@/components/common/coming-soon";
 
 const PAGE_SIZE = 20;
 const ROLES: Role[] = ["CUSTOMER", "SHOP_OWNER", "SHOP_STAFF", "ADMIN"];
 type ActiveFilter = "all" | "active" | "suspended";
 
 export default function UsersPage() {
+  return (
+    <WhenApiReady feature="users">
+      <UsersScreen />
+    </WhenApiReady>
+  );
+}
+
+function UsersScreen() {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [role, setRole] = useState<Role | "ALL">("ALL");

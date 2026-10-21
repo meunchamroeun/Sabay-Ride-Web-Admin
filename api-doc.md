@@ -162,8 +162,9 @@ All paths are relative to `/api/v1`. Client functions are in `src/lib/api/endpoi
 | --- | --- |
 | `GET /admin/dashboard` | Totals for the current month: shops, users, bookings, revenue split, payout health. |
 | `GET /admin/shops?status=PENDING&page=0&size=5` | "Shop review queue" card. |
-| `GET /admin/reviews?page=0&size=5` | "Latest reviews" card. |
 | `GET /admin/payouts?status=FAILED&page=0&size=1` | Failed payout count (`totalElements`). |
+
+The cards follow the SRS administrator dashboard (§14.12): customers, shops and shops pending verification, motorbikes, bookings, platform commission, and payouts pending or failed.
 
 > **Backend request:** the OpenAPI schema for `/admin/dashboard` points to `Response`, which is the *shop* dashboard (`shop`, `bookings`, `fleet`) — a springdoc name collision. The dashboard therefore reads the admin response **structurally**: every top-level object becomes a card, numeric fields become rows, and it looks for `grossBookingValue`, `platformCommission` and `failedCount` by name (`src/lib/dashboard.ts`). Please give the admin DTO its own schema name (e.g. `@Schema(name = "AdminDashboardResponse")`) so the shape is documented.
 
@@ -179,7 +180,6 @@ All paths are relative to `/api/v1`. Client functions are in `src/lib/api/endpoi
 | `POST /admin/shops/{id}/reject` | **Reject**. Body `{ "reason": "…" }` (max 255, shown to the owner). |
 | `POST /admin/shops/{id}/suspend` | **Suspend**: hides the shop and disables payouts. Body `{ "reason": "…" }`. |
 | `POST /admin/shops/{id}/reactivate` | **Reactivate**: back to `VERIFIED`. No body. |
-| `PATCH /admin/shops/{id}/payout` | **Payout setup**. Body `{ "paymentSetupComplete": true, "payoutSharePercent": 90 }`. |
 
 Which actions are shown depends on the status:
 
@@ -190,14 +190,15 @@ Which actions are shown depends on the status:
 | `VERIFIED` | Suspend |
 | `SUSPENDED` | Reactivate |
 
-A shop appears in customer search only when it is `VERIFIED` **and** `paymentSetupComplete` is true (`visibleInSearch`).
+A shop appears in customer search only when it is `VERIFIED` **and** `paymentSetupComplete` is true (`visibleInSearch`). The panel shows the payout account status read-only: the SRS gives "Edit shop profile and payout details" to the shop owner only (§5.1), so the dashboard does not call `PATCH /admin/shops/{id}/payout` even though the API has it.
 
 ### Payouts — `/payouts`
 
 | Call | Purpose |
 | --- | --- |
 | `GET /admin/payouts?status={FAILED\|PENDING\|PAID}&page&size` | Tabs; no `status` = all. Rows are `PayoutRow`. |
-| `POST /admin/payouts/{paymentId}/retry` | **Retry** a failed payout. `409 ALREADY_PAID` if it has already settled. |
+
+View only. Payouts and their three retries are automatic with "no administrator action" (FR-78, FR-79); a payout that still fails is flagged here and in the top-bar bell for the administrator's attention. The dashboard therefore does not call `POST /admin/payouts/{id}/retry`, even though the API has it.
 
 ### Reviews — `/reviews`
 
@@ -213,13 +214,17 @@ A shop appears in customer search only when it is `VERIFIED` **and** `paymentSet
 | `PATCH /users/me` | Body `{ "fullName": "…", "preferredLanguage": "km" \| "en" }`. Only sent fields change. |
 | `POST /users/me/password` | Change password (see §3.6). |
 
-### Screens waiting for the API
+### Screens marked "Coming soon"
 
-**Bookings**, **Motorbikes**, **Users**, **Reports**, **Audit log** and **Travel blog** are built to the SRS, but their endpoints don't exist yet. Each one calls the path proposed in **§10**.
-- **Real ADMIN account:** the API answers `404 NOT_FOUND` ("No such endpoint."), and the screen shows a "Waiting for the backend" notice naming the endpoint.
-- **Demo admin:** the screen works with sample data (§8).
+**Bookings**, **Motorbikes**, **Users**, **Reports**, **Audit log** and **Travel blog** are built to the SRS, but the API (Production and Staging) has none of their endpoints yet. Until it does:
+- The page shows **Coming soon** and lists the endpoints it needs, for every sign-in including the demo admin. Nothing is called, and no sample data is shown.
+- The sidebar and the phone "More" menu mark them **Soon**. On phones, Reviews takes the Bookings slot in the bottom bar.
 
-**Notifications** (FR-16, 24, 85) is still a "Soon" placeholder. Roadside assistance is handled by shops in the app, not by administrators, so it has no admin screen.
+When the backend ships one, add its key to `NEXT_PUBLIC_API_READY` (e.g. `bookings,users`) and redeploy; the page then calls the paths in **§10**. Keys: `bookings`, `motorbikes`, `users`, `reports`, `audit`, `blog` (`src/config/api-features.ts`).
+
+Motorbikes stay view-only for admins even then: the SRS gives "Add or edit motorbikes" to shop owners only (§5.1), and the API only has `/shops/me/motorbikes` for owners.
+
+The top-bar bell shows the one admin notification in the SRS (§10): **payout failed**. The API has no admin notification feed, so it reads `/admin/payouts?status=FAILED`. Roadside assistance is handled by shops in the app, so it has no admin screen.
 
 ---
 
@@ -278,7 +283,7 @@ Until an `ADMIN` account exists, sign in on the login page with:
 | --- | --- |
 | `admin1` (or `+85500000001`) | `Demo1234!` |
 
-Demo sessions never call the API. `src/lib/api/demo.ts` answers the same paths with sample data: 10 shops, 16 payouts and 12 reviews. Approve, reject, suspend, payout setup and retry all work in memory until reload or sign-out, and a **Demo data** badge is shown in the top bar. Disable it with `NEXT_PUBLIC_DEMO_ADMIN=false`.
+Demo sessions never call the API. `src/lib/api/demo.ts` answers the paths that exist in the API with sample data: 10 shops, 16 payouts and 12 reviews. "Coming soon" screens stay Coming soon in the demo too. Approve, reject, suspend, payout setup and retry all work in memory until reload or sign-out, and a **Demo data** badge is shown in the top bar. Disable it with `NEXT_PUBLIC_DEMO_ADMIN=false`.
 
 ---
 
@@ -296,7 +301,7 @@ Demo sessions never call the API. `src/lib/api/demo.ts` answers the same paths w
 
 ## 10. Proposed admin endpoints (SRS §14.4, §14.8)
 
-These are the paths the screens already call. Field names follow the SRS data dictionary (§16) in camelCase. Lists use the standard page envelope `{ content, page, size, totalElements }` (default size 20, max 100). TypeScript shapes are in `src/lib/api/types.ts`, and working sample responses come from the demo in `src/lib/api/demo-ops.ts`.
+None of these exist in the API yet (checked against Production and Staging); the matching screens show "Coming soon" until they do. These are the paths the screens will call. Field names follow the SRS data dictionary (§16) in camelCase. Lists use the standard page envelope `{ content, page, size, totalElements }` (default size 20, max 100). TypeScript shapes are in `src/lib/api/types.ts`, and working sample responses come from the demo in `src/lib/api/demo-ops.ts`.
 
 All of them are ADMIN-only and should write an audit-log entry for every change (NFR-19).
 
@@ -382,7 +387,6 @@ All of them are ADMIN-only and should write an audit-log entry for every change 
 | `PATCH /admin/blog/posts/{id}` | any of the above | `BlogPost` |
 | `POST /admin/blog/posts/{id}/publish` | — | `BlogPost` (`PUBLISHED`, sets `publishedAt` the first time) |
 | `POST /admin/blog/posts/{id}/unpublish` | — | `BlogPost` (back to `DRAFT`) |
-| `DELETE /admin/blog/posts/{id}` | — | `204` |
 
 `BlogPost`: `id, title, slug, content (Markdown), coverImageUrl?, status, authorName, publishedAt?, createdAt, updatedAt`.
 - **Validation:** title up to 200 characters; slug `^[a-z0-9]+(-[a-z0-9]+)*$` and unique, with `409 SLUG_TAKEN` on a duplicate.

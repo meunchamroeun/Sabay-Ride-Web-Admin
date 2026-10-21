@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { toast } from "sonner";
-import { CheckCircle2, Loader2, RotateCw } from "lucide-react";
-import { ApiError } from "@/lib/api/client";
+import { CheckCircle2, RotateCw } from "lucide-react";
 import { adminApi } from "@/lib/api/endpoints";
 import type { PaymentStatus } from "@/lib/api/types";
 import { formatDate, formatKhr, formatUsd, shortId } from "@/lib/format";
@@ -27,7 +25,6 @@ const PAGE_SIZE = 20;
 export default function PayoutsPage() {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
-  const qc = useQueryClient();
   const [filter, setFilter] = useState<PaymentStatus | "ALL">("FAILED");
   const [page, setPage] = useState(0);
   const status = filter === "ALL" ? undefined : filter;
@@ -37,22 +34,8 @@ export default function PayoutsPage() {
     queryFn: () => adminApi.payouts(status, page, PAGE_SIZE),
   });
 
-  const retry = useMutation({
-    mutationFn: adminApi.retryPayout,
-    onSuccess: () => {
-      toast.success(t("payouts.retried"));
-      qc.invalidateQueries({ queryKey: ["payouts"] });
-      qc.invalidateQueries({ queryKey: ["admin-dashboard"] });
-    },
-    onError: (e) =>
-      toast.error(
-        e instanceof ApiError && e.code === "ALREADY_PAID"
-          ? t("payouts.alreadyPaid")
-          : e instanceof ApiError
-            ? `${e.message} (${e.code})`
-            : String(e),
-      ),
-  });
+  // View only: payouts and their retries are automatic (SRS FR-78, FR-79); a payout that still
+  // fails after three retries is flagged here for the administrator's attention.
 
   return (
     <>
@@ -98,15 +81,14 @@ export default function PayoutsPage() {
                   <TableHead>{t("payouts.col.status")}</TableHead>
                   <TableHead className="text-center">{t("payouts.col.attempts")}</TableHead>
                   <TableHead>{t("payouts.col.reason")}</TableHead>
-                  <TableHead>{t("payouts.col.created")}</TableHead>
-                  <TableHead className="pr-4" />
+                  <TableHead className="pr-4">{t("payouts.col.created")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {query.isLoading &&
                   Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i}>
-                      <TableCell colSpan={8} className="px-4">
+                      <TableCell colSpan={7} className="px-4">
                         <Skeleton className="h-8 w-full" />
                       </TableCell>
                     </TableRow>
@@ -143,25 +125,8 @@ export default function PayoutsPage() {
                         <span className="text-xs text-muted-foreground">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-xs whitespace-nowrap text-muted-foreground">
+                    <TableCell className="pr-4 text-xs whitespace-nowrap text-muted-foreground">
                       {formatDate(p.createdAt, lng, true)}
-                    </TableCell>
-                    <TableCell className="pr-4 text-right">
-                      {p.status === "FAILED" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={retry.isPending && retry.variables === p.paymentId}
-                          onClick={() => retry.mutate(p.paymentId)}
-                        >
-                          {retry.isPending && retry.variables === p.paymentId ? (
-                            <Loader2 className="animate-spin" />
-                          ) : (
-                            <RotateCw />
-                          )}
-                          {t("common.retry")}
-                        </Button>
-                      )}
                     </TableCell>
                   </motion.tr>
                 ))}

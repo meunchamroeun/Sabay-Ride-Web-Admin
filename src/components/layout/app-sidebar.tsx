@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Motorbike } from "@/components/common/motorbike-icon";
 import { adminApi } from "@/lib/api/endpoints";
+import { isApiReady } from "@/config/api-features";
 import { swaggerUrlFor } from "@/config/env";
 import { useApiEnv } from "@/lib/api/api-env";
 import { cn } from "@/lib/utils";
@@ -64,26 +65,26 @@ export function AppSidebar() {
       label: t("nav.operations"),
       items: [
         { href: "/shops", key: "shops", icon: Store, badge: pending.data?.totalElements },
-        { href: "/bookings", key: "bookings", icon: CalendarCheck },
-        { href: "/motorbikes", key: "motorbikes", icon: Motorbike },
+        { href: "/bookings", key: "bookings", icon: CalendarCheck, soon: !isApiReady("bookings") },
+        { href: "/motorbikes", key: "motorbikes", icon: Motorbike, soon: !isApiReady("motorbikes") },
         { href: "/payouts", key: "payouts", icon: Wallet, badge: failed.data?.totalElements },
         { href: "/reviews", key: "reviews", icon: MessageSquareQuote },
       ],
     },
-    { key: "people", label: t("nav.people"), items: [{ href: "/users", key: "users", icon: Users }] },
+    { key: "people", label: t("nav.people"), items: [{ href: "/users", key: "users", icon: Users, soon: !isApiReady("users") }] },
     {
       key: "insights",
       label: t("nav.insights"),
       items: [
-        { href: "/reports", key: "reports", icon: ChartColumn },
-        { href: "/audit", key: "audit", icon: ScrollText },
+        { href: "/reports", key: "reports", icon: ChartColumn, soon: !isApiReady("reports") },
+        { href: "/audit", key: "audit", icon: ScrollText, soon: !isApiReady("audit") },
       ],
     },
     {
       key: "content",
       label: t("nav.content"),
       items: [
-        { href: "/blog", key: "blog", icon: BookOpenText },
+        { href: "/blog", key: "blog", icon: BookOpenText, soon: !isApiReady("blog") },
       ],
     },
     { key: "account", label: t("nav.account"), items: [{ href: "/profile", key: "profile", icon: UserRound }] },

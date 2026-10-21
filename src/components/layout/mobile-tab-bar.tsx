@@ -22,28 +22,37 @@ import {
 } from "lucide-react";
 import { Motorbike } from "@/components/common/motorbike-icon";
 import { adminApi } from "@/lib/api/endpoints";
+import { isApiReady, type PendingFeature } from "@/config/api-features";
 import { swaggerUrlFor } from "@/config/env";
 import { useApiEnv } from "@/lib/api/api-env";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
-const TABS = [
+// Bookings takes the third tab once its API exists; until then Reviews (real data) does.
+const BOOKINGS_READY = isApiReady("bookings");
+type Tab = { href: string; key: string; icon: React.ElementType; badge?: "shops" | "payouts" };
+const BOOKINGS: Tab = { href: "/bookings", key: "bookings", icon: CalendarCheck };
+const REVIEWS: Tab = { href: "/reviews", key: "reviews", icon: MessageSquareQuote };
+
+const TABS: Tab[] = [
   { href: "/", key: "home", icon: LayoutGrid },
-  { href: "/shops", key: "shops", icon: Store, badge: "shops" as const },
-  { href: "/bookings", key: "bookings", icon: CalendarCheck },
-  { href: "/payouts", key: "payouts", icon: Wallet, badge: "payouts" as const },
+  { href: "/shops", key: "shops", icon: Store, badge: "shops" },
+  BOOKINGS_READY ? BOOKINGS : REVIEWS,
+  { href: "/payouts", key: "payouts", icon: Wallet, badge: "payouts" },
 ];
 
 // The remaining pages, shown in the "More" sheet that slides up from the bottom.
-const MORE = [
+const MORE: Tab[] = [
+  BOOKINGS_READY ? REVIEWS : BOOKINGS,
   { href: "/motorbikes", key: "motorbikes", icon: Motorbike },
-  { href: "/reviews", key: "reviews", icon: MessageSquareQuote },
   { href: "/users", key: "users", icon: Users },
   { href: "/reports", key: "reports", icon: ChartColumn },
   { href: "/audit", key: "audit", icon: ScrollText },
   { href: "/blog", key: "blog", icon: BookOpenText },
   { href: "/profile", key: "profile", icon: UserRound },
 ];
+const PENDING = new Set<string>(["bookings", "motorbikes", "users", "reports", "audit", "blog"]);
+const isSoon = (key: string) => PENDING.has(key) && !isApiReady(key as PendingFeature);
 
 const tileLink = "flex flex-col items-center gap-1.5 rounded-2xl p-1.5 text-center text-[11px] leading-tight font-medium text-muted-foreground active:scale-95";
 const tileIcon = "grid size-12 place-items-center rounded-2xl bg-muted text-foreground/80 [&_svg]:size-5 [&_svg]:stroke-[1.75]";
@@ -132,8 +141,13 @@ export function MobileTabBar() {
             return (
               <li key={item.href}>
                 <Link href={item.href} onClick={() => setMoreOpen(false)} aria-current={isActive ? "page" : undefined} className={tileLink}>
-                  <span className={cn(tileIcon, isActive && "bg-sidebar-accent text-sidebar-accent-foreground")}>
+                  <span className={cn(tileIcon, "relative", isActive && "bg-sidebar-accent text-sidebar-accent-foreground")}>
                     <item.icon />
+                    {isSoon(item.key) && (
+                      <span className="absolute -top-1.5 -right-2 rounded-full bg-sidebar-badge px-1.5 py-px text-[9px] leading-tight font-bold text-white ring-2 ring-popover">
+                        {t("nav.soon")}
+                      </span>
+                    )}
                   </span>
                   <span className={cn("line-clamp-2", isActive && "font-semibold text-sidebar-accent-foreground")}>{t(`nav.${item.key}`)}</span>
                 </Link>

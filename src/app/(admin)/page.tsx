@@ -11,7 +11,6 @@ import {
   CalendarCheck,
   CheckCircle2,
   RotateCw,
-  Star,
   Store,
   TriangleAlert,
   Users,
@@ -55,7 +54,6 @@ export default function DashboardPage() {
 
   const dash = useQuery({ queryKey: ["admin-dashboard"], queryFn: adminApi.dashboard });
   const queue = useQuery({ queryKey: ["shops", "PENDING", 0, 5], queryFn: () => adminApi.shops("PENDING", 0, 5) });
-  const reviews = useQuery({ queryKey: ["reviews", 0, 5], queryFn: () => adminApi.reviews(0, 5) });
   const failed = useQuery({ queryKey: ["payouts", "FAILED", 0, 1], queryFn: () => adminApi.payouts("FAILED", 0, 1) });
 
   const groups = groupDashboard(dash.data);
@@ -153,7 +151,7 @@ export default function DashboardPage() {
         </>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4">
         <Card>
           <CardHeader>
             <CardTitle>{t("dashboard.reviewQueue")}</CardTitle>
@@ -196,39 +194,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("dashboard.latestReviews")}</CardTitle>
-            <CardAction>
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/reviews">
-                  {t("common.view")} <ArrowUpRight className="size-3.5" />
-                </Link>
-              </Button>
-            </CardAction>
-          </CardHeader>
-          <CardContent className="space-y-1">
-            {reviews.isError && <ErrorState error={reviews.error} onRetry={() => reviews.refetch()} />}
-            {reviews.isLoading &&
-              Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}
-            {reviews.data?.content.map((r) => (
-              <div key={r.id} className="rounded-xl p-2.5">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="truncate text-sm font-medium">{r.shopName}</p>
-                  <span className="flex shrink-0 items-center gap-0.5 text-xs text-amber-500">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className={cn("size-3", i < r.rating ? "fill-current" : "opacity-25")} />
-                    ))}
-                  </span>
-                </div>
-                <p className="line-clamp-1 text-xs text-muted-foreground">
-                  {r.customerName} — {r.comment || t("reviews.noComment")}
-                </p>
-              </div>
-            ))}
-            {reviews.data?.content.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">{t("common.empty")}</p>}
-          </CardContent>
-        </Card>
       </div>
     </>
   );

@@ -92,12 +92,9 @@ export const adminApi = {
   suspend: (id: string, reason: string) =>
     api<AdminShop>(`/admin/shops/${id}/suspend`, { method: "POST", body: { reason } }),
   reactivate: (id: string) => api<AdminShop>(`/admin/shops/${id}/reactivate`, { method: "POST" }),
-  payout: (id: string, body: { paymentSetupComplete: boolean; payoutSharePercent?: number }) =>
-    api<AdminShop>(`/admin/shops/${id}/payout`, { method: "PATCH", body }),
 
   payouts: (status: PaymentStatus | undefined, page = 0, size = 20) =>
     api<Page<PayoutRow>>("/admin/payouts", { query: { status, page, size } }),
-  retryPayout: (paymentId: string) => api<PayoutRow>(`/admin/payouts/${paymentId}/retry`, { method: "POST" }),
 
   reviews: (page = 0, size = 20) => api<Page<Review>>("/admin/reviews", { query: { page, size } }),
 };
@@ -141,5 +138,4 @@ export const opsApi = {
     api<BlogPost>(`/admin/blog/posts/${id}`, { method: "PATCH", body }),
   publishPost: (id: string) => api<BlogPost>(`/admin/blog/posts/${id}/publish`, { method: "POST" }),
   unpublishPost: (id: string) => api<BlogPost>(`/admin/blog/posts/${id}/unpublish`, { method: "POST" }),
-  deletePost: (id: string) => api<void>(`/admin/blog/posts/${id}`, { method: "DELETE" }),
 };

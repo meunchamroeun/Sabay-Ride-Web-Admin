@@ -22,7 +22,6 @@ import { cn } from "@/lib/utils";
 import { BrandMark } from "@/components/common/brand";
 import { LanguageSelect } from "@/components/common/language-select";
 import { ContourBackground } from "@/components/common/contour-background";
-import { GoogleIcon, TelegramIcon } from "@/components/common/provider-icons";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { RequiredMark } from "@/components/common/required-mark";
 import { ResetPasswordDialog } from "./reset-password-dialog";
@@ -124,8 +123,6 @@ export default function LoginPage() {
     setResetPhone(id);
   }
 
-  // The API only supports phone/email + password today; social sign-in is announced, not faked.
-  const soon = (name: string) => toast.info(t("auth.methodSoon", { name }));
   const apiEnv = useApiEnv();
 
   const busy = form.formState.isSubmitting;
@@ -280,24 +277,6 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <div className="form-in my-5 flex items-center text-[13px] text-muted-foreground">
-              <span className="h-px flex-1 bg-border" />
-              <span className="mx-3 select-none">{t("auth.otherService")}</span>
-              <span className="h-px flex-1 bg-border" />
-            </div>
-
-            <div className="form-in grid grid-cols-2 gap-2 rounded-2xl bg-black/[0.055] p-2 dark:bg-white/[0.04]">
-              {[
-                { name: "Google", icon: <GoogleIcon /> },
-                { name: "Telegram", icon: <TelegramIcon /> },
-              ].map((p) => (
-                <button key={p.name} type="button" onClick={() => soon(p.name)} className={providerBtn}>
-                  {p.icon}
-                  <span className="truncate leading-none">{p.name}</span>
-                </button>
-              ))}
-            </div>
-
             <div className="mt-6 flex flex-col items-center gap-2 lg:hidden">
               <span className="text-[11px] text-muted-foreground">{t("auth.connectedTo")}</span>
               <EnvPills current={apiEnv} tone="page" />
@@ -326,9 +305,6 @@ const fieldError = "border-destructive/70 focus-within:border-destructive focus-
 
 const inputClass =
   "min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted-foreground/80";
-
-const providerBtn =
-  "flex h-11 min-w-0 items-center justify-center gap-2.5 rounded-[10px] border bg-background px-3 text-[13px] font-medium transition-colors hover:bg-muted dark:border-[#333] dark:bg-[#020817] dark:hover:bg-white/5";
 
 /**
  * "Connected to" card. At rest it shows the active backend; on hover (or keyboard focus / tap)
