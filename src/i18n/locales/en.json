@@ -114,7 +114,9 @@
       "mismatch": "The passwords do not match.",
       "codeWrong": "That code is wrong or has expired. Request a new one.",
       "done": "Password changed. Sign in with your new password."
-    }
+    },
+    "signInFailed": "Could not sign in: {{detail}}. Please try again or contact the administrator.",
+    "offline": "Cannot reach the server. Check your internet connection and try again."
   },
   "dashboard": {
     "title": "Dashboard",

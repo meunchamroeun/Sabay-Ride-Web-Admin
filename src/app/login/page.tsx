@@ -107,7 +107,9 @@ export default function LoginPage() {
       }
       router.replace("/");
     } catch (e) {
-      setError(e instanceof ApiError && e.status === 401 ? t("auth.invalid") : (e as Error).message);
+      if (e instanceof ApiError && e.status === 401) setError(t("auth.invalid"));
+      else if (e instanceof ApiError) setError(t("auth.signInFailed", { detail: `${e.message} (${e.status})` }));
+      else setError(t("auth.offline"));
     }
   }
 

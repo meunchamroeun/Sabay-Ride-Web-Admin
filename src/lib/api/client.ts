@@ -18,9 +18,12 @@ async function parse<T>(res: Response): Promise<T> {
     try {
       body = JSON.parse(text);
     } catch {
-      /* non-JSON error */
+      /* non-JSON error, e.g. a plain-text "Invalid CORS request" */
     }
-    throw new ApiError(res.status, body.code ?? `HTTP_${res.status}`, body.message ?? res.statusText, body.field);
+    // HTTP/2 has no status text, so never end up with an empty message the UI cannot show.
+    const plain = !body.message && text && text.length < 200 && !text.trimStart().startsWith("<") ? text.trim() : "";
+    const message = body.message || plain || res.statusText || `Request failed (HTTP ${res.status})`;
+    throw new ApiError(res.status, body.code ?? `HTTP_${res.status}`, message, body.field);
   }
   return (text ? JSON.parse(text) : undefined) as T;
 }
