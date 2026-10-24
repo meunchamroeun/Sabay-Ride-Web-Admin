@@ -204,7 +204,17 @@ View only. Payouts and their three retries are automatic with "no administrator 
 
 | Call | Purpose |
 | --- | --- |
-| `GET /admin/reviews?page&size=12` | All reviews, newest first. Read-only: the API has no moderation endpoint. |
+| `GET /admin/reviews?page&size=12` | All reviews, newest first. Read-only: the API has no moderation endpoint. Each review may carry the shop owner's answer, `shopReply` and `shopRepliedAt` (FR-27), shown under the review. |
+
+### Notifications — top-bar bell
+
+| Call | Purpose |
+| --- | --- |
+| `GET /notifications?page=0&size=10` | Newest first. The page also carries `unreadCount`, which drives the badge. |
+| `POST /notifications/{id}/read` | Opening an unread item marks it read. Returns `{ unreadCount }`; `404` if already read. |
+| `POST /notifications/read-all` | "Mark all as read". Returns `{ unreadCount: 0 }`. |
+
+The item schema is not published (springdoc collision on `PageResponse`), so the bell reads `title`, `body`/`message`, `type`, `read`/`readAt` and `createdAt` defensively (`src/lib/notifications.ts`). A `type` containing `PAYOUT` links to Payouts. Under the list, the failed-payout count from `GET /admin/payouts?status=FAILED` stays as the FR-79 flag. **Backend request:** publish the notification item schema.
 
 ### Profile — `/profile`
 
@@ -224,7 +234,7 @@ When the backend ships one, add its key to `NEXT_PUBLIC_API_READY` (e.g. `bookin
 
 Motorbikes stay view-only for admins even then: the SRS gives "Add or edit motorbikes" to shop owners only (§5.1), and the API only has `/shops/me/motorbikes` for owners.
 
-The top-bar bell shows the one admin notification in the SRS (§10): **payout failed**. The API has no admin notification feed, so it reads `/admin/payouts?status=FAILED`. Roadside assistance is handled by shops in the app, so it has no admin screen.
+The top-bar bell shows the signed-in admin's notifications from `GET /notifications` (SRS §10 sends the admin **payout failed**), plus the failed-payout count as the FR-79 flag. Roadside assistance is handled by shops in the app, so it has no admin screen.
 
 ---
 

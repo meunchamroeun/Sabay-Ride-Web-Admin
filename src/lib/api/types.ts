@@ -87,6 +87,30 @@ export interface Review {
   rating: number;
   comment?: string;
   createdAt: string;
+  /** The shop owner's answer (FR-27); the owner may change it, the review itself is fixed. */
+  shopReply?: string;
+  shopRepliedAt?: string;
+}
+
+/**
+ * GET /notifications item (FR-16). The item schema is not published (springdoc name collision
+ * on PageResponse), so every field is optional and read defensively in src/lib/notifications.ts.
+ */
+export interface AppNotification {
+  id: string;
+  type?: string;
+  title?: string;
+  body?: string;
+  message?: string;
+  read?: boolean;
+  readAt?: string | null;
+  createdAt?: string;
+  [key: string]: unknown;
+}
+
+/** GET /notifications: a normal page plus the unread total, so the badge and list come together. */
+export interface NotificationPage extends Page<AppNotification> {
+  unreadCount: number;
 }
 
 export interface Photo {

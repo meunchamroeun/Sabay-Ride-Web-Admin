@@ -6,7 +6,7 @@
  */
 import { ApiError } from "./errors";
 import { addAudit, buildOps, handleOps, monthTotals, NOT_HANDLED, page, type OpsData } from "./demo-ops";
-import type { AdminShop, AuthUser, PayoutRow, Photo, Profile, Review, ShopStatus } from "./types";
+import type { AdminShop, AppNotification, AuthUser, PayoutRow, Photo, Profile, Review, ShopStatus } from "./types";
 
 /** Turned off by setting NEXT_PUBLIC_DEMO_ADMIN=false (e.g. once real admin accounts exist). */
 export const DEMO_ENABLED = process.env.NEXT_PUBLIC_DEMO_ADMIN !== "false";
@@ -136,6 +136,14 @@ const REVIEW_SEED: [number, string, number, string][] = [
   [2, "Ben Wilson", 4, ""],
 ];
 
+/** Owner replies (FR-27) on some reviews, keyed by REVIEW_SEED index. */
+const REPLIES: Record<number, string> = {
+  1: "Thank you! We added a second staff member at the counter so handover is faster now.",
+  4: "Sorry about the brakes — that bike has been fully serviced since.",
+  7: "We apologise for the cancellation; the bike failed its check that morning. Glad the second trip went well.",
+  10: "Thanks Chloe, see you next time!",
+};
+
 /** Reviews only on COMPLETED bookings, one per booking, written by that customer (FR-15). */
 function buildReviews(ops: OpsData): Review[] {
   const completed = ops.bookings.filter((b) => b.status === "COMPLETED");
@@ -151,11 +159,34 @@ function buildReviews(ops: OpsData): Review[] {
       rating,
       comment: comment || undefined,
       createdAt: new Date(Math.min(Date.now(), new Date(returned).getTime() + 5 * 3_600_000)).toISOString(),
+      ...(REPLIES[i] ? { shopReply: REPLIES[i], shopRepliedAt: new Date(Math.min(Date.now(), new Date(returned).getTime() + 30 * 3_600_000)).toISOString() } : {}),
     };
   }).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
-let state: { shops: DemoShop[]; payouts: PayoutRow[]; reviews: Review[]; profile: Profile; ops: OpsData } | null = null;
+/** SRS §10: the administrator is notified when a payout still fails after its retries. */
+function buildNotifications(payouts: PayoutRow[]): AppNotification[] {
+  return payouts
+    .filter((p) => p.status === "FAILED")
+    .map((p, i) => ({
+      id: uuid(i + 1, "a"),
+      type: "PAYOUT_FAILED",
+      title: "Payout failed",
+      body: `$${p.amount} to ${p.shopName} failed after 3 retries: ${p.failureReason ?? "unknown error"}.`,
+      read: i > 1,
+      createdAt: p.createdAt,
+    }))
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+let state: {
+  shops: DemoShop[];
+  payouts: PayoutRow[];
+  reviews: Review[];
+  notifications: AppNotification[];
+  profile: Profile;
+  ops: OpsData;
+} | null = null;
 
 const STORE_KEY = "sabayride.demo.state";
 
@@ -187,6 +218,7 @@ function db() {
       ops,
       payouts: buildPayouts(ops),
       reviews: buildReviews(ops),
+      notifications: [],
       profile: {
         ...DEMO_USER,
         dateOfBirth: "1998-04-12",
@@ -197,7 +229,10 @@ function db() {
         createdAt: ago(90),
       },
     };
+    state.notifications = buildNotifications(state.payouts);
   }
+  // A demo saved before notifications existed gets them on first use.
+  state.notifications ??= buildNotifications(state.payouts);
   return state;
 }
 
@@ -329,6 +364,20 @@ async function handleDemo(method: string, path: string, query: URLSearchParams, 
   }
 
   if (method === "GET" && path === "/admin/reviews") return page(d.reviews, query);
+
+  const unreadCount = () => d.notifications.filter((n) => !n.read).length;
+  if (method === "GET" && path === "/notifications") return { ...page(d.notifications, query), unreadCount: unreadCount() };
+  if (method === "GET" && path === "/notifications/unread-count") return { unreadCount: unreadCount() };
+  if (method === "POST" && path === "/notifications/read-all") {
+    d.notifications.forEach((n) => (n.read = true));
+    return { unreadCount: 0 };
+  }
+  if ((m = path.match(/^\/notifications\/([^/]+)\/read$/)) && method === "POST") {
+    const n = d.notifications.find((x) => x.id === m![1] && !x.read);
+    if (!n) throw new ApiError(404, "NOTIFICATION_NOT_FOUND", "Notification not found.");
+    n.read = true;
+    return { unreadCount: unreadCount() };
+  }
 
   if ((m = path.match(/^\/shops\/([^/]+)\/photos$/)) && method === "GET") {
     const shop = findShop(m[1]);

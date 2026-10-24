@@ -1,31 +1,7 @@
 import { api } from "./client";
 import { DEMO_USER, isDemoCredentials, resetDemo } from "./demo";
 import { tokenStore } from "./token-store";
-import type {
-  AdminBooking,
-  AdminDashboard,
-  AdminMotorbike,
-  AdminUser,
-  AuditAction,
-  AuditLogEntry,
-  BlogPost,
-  BlogPostInput,
-  BlogStatus,
-  BookingStatus,
-  MotorbikeStatus,
-  PlatformReport,
-  ReportPeriod,
-  Role,
-  AdminShop,
-  AuthTokens,
-  Page,
-  PaymentStatus,
-  PayoutRow,
-  Photo,
-  Profile,
-  Review,
-  ShopStatus,
-} from "./types";
+import type { AdminBooking, AdminDashboard, AdminMotorbike, AdminUser, AuditAction, AuditLogEntry, BlogPost, BlogPostInput, BlogStatus, BookingStatus, MotorbikeStatus, PlatformReport, ReportPeriod, Role, AdminShop, AuthTokens, Page, PaymentStatus, PayoutRow, Photo, Profile, Review, ShopStatus, NotificationPage } from "./types";
 
 /* Authentication — open endpoints */
 export const authApi = {
@@ -62,6 +38,13 @@ export const authApi = {
 };
 
 /* Profile — App and Dashboard */
+/** In-app notifications for the signed-in user (FR-16). The admin receives "payout failed" (SRS §10). */
+export const notificationsApi = {
+  list: (page = 0, size = 10) => api<NotificationPage>("/notifications", { query: { page, size } }),
+  markRead: (id: string) => api<{ unreadCount: number }>(`/notifications/${id}/read`, { method: "POST" }),
+  markAllRead: () => api<{ unreadCount: number }>("/notifications/read-all", { method: "POST" }),
+};
+
 export const profileApi = {
   me: () => api<Profile>("/users/me"),
   update: (body: Partial<Pick<Profile, "fullName" | "preferredLanguage">>) =>

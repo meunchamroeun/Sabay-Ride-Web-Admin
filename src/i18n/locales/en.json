@@ -118,7 +118,7 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "subtitle": "Platform totals for this month (Cambodia time)",
+    "subtitle": "Platform totals for this month",
     "greeting": "Hello, {{name}}",
     "revenueSplit": "Revenue split",
     "gross": "Gross booking value",
@@ -257,7 +257,9 @@
     "booking": "Booking",
     "viewShop": "View shop",
     "readOnly": "Reviews are read-only: they cannot be edited, hidden or removed.",
-    "open": "Open review"
+    "open": "Open review",
+    "shopReply": "Reply from the shop",
+    "repliedAt": "Replied {{date}}"
   },
   "profile": {
     "title": "Profile",
@@ -464,7 +466,10 @@
     "allShops_one": "{{count}} shop to review",
     "allShops_other": "{{count}} shops to review",
     "allPayouts_one": "{{count}} failed payout",
-    "allPayouts_other": "{{count}} failed payouts"
+    "allPayouts_other": "{{count}} failed payouts",
+    "markAll": "Mark all as read",
+    "untitled": "Notification",
+    "unread": "Unread"
   },
   "soon": {
     "badge": "Coming soon",

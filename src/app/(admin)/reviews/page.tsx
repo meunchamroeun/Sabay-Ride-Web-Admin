@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { ChevronRight, Star, Store } from "lucide-react";
+import { ChevronRight, MessageSquareReply, Star, Store } from "lucide-react";
 import type { Review } from "@/lib/api/types";
 import { adminApi } from "@/lib/api/endpoints";
 import { formatDate, initials } from "@/lib/format";
@@ -83,6 +83,12 @@ export default function ReviewsPage() {
                   <p className={cn("line-clamp-3 flex-1 text-sm leading-relaxed", !r.comment && "text-muted-foreground italic")}>
                     {r.comment || t("reviews.noComment")}
                   </p>
+                  {r.shopReply && (
+                    <p className="flex items-start gap-1.5 rounded-lg bg-muted/60 px-2.5 py-1.5 text-xs text-muted-foreground">
+                      <MessageSquareReply className="mt-px size-3.5 shrink-0" />
+                      <span className="line-clamp-2">{r.shopReply}</span>
+                    </p>
+                  )}
                   <div className="flex items-center justify-between gap-2 border-t pt-3">
                     <Stars rating={r.rating} />
                     <span className="text-[11px] text-muted-foreground">{formatDate(r.createdAt, i18n.language)}</span>

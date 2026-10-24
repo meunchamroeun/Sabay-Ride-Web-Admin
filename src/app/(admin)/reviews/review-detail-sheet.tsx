@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
-import { CalendarClock, Hash, Store, UserRound } from "lucide-react";
+import { CalendarClock, Hash, MessageSquareReply, Store, UserRound } from "lucide-react";
 import type { Review } from "@/lib/api/types";
 import { formatDate, initials, shortId } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -44,6 +44,20 @@ export function ReviewDetailSheet({ review, onClose }: { review: Review | null; 
             >
               {r.comment || t("reviews.noComment")}
             </blockquote>
+
+            {r.shopReply && (
+              <div className="ml-4 rounded-xl border bg-card p-4">
+                <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                  <MessageSquareReply className="size-3.5" /> {t("reviews.shopReply")} · {r.shopName}
+                </p>
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">{r.shopReply}</p>
+                {r.shopRepliedAt && (
+                  <p className="mt-2 text-[11px] text-muted-foreground">
+                    {t("reviews.repliedAt", { date: formatDate(r.shopRepliedAt, lng, true) })}
+                  </p>
+                )}
+              </div>
+            )}
 
             <dl className="grid gap-3 text-sm">
               <Fact icon={Store} label={t("reviews.col.shop")} value={r.shopName} />

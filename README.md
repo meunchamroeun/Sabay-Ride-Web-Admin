@@ -56,14 +56,15 @@ The demo answers the admin endpoints that exist in the API from sample data in t
 
 ## Screens → API
 
-Checked against the live OpenAPI spec of Production and Staging (identical, 62 operations).
+Checked against the live OpenAPI spec of Production and Staging (identical, 73 operations, last checked 24 Oct 2026). The October update added notifications, shop staff and review replies; the admin-only endpoints below are still missing.
 
 | Screen | Status | Endpoints | SRS |
 | --- | --- | --- | --- |
 | Dashboard | ✅ Real data | `GET /admin/dashboard`, `/admin/shops?status=PENDING`, `/admin/reviews`, `/admin/payouts?status=FAILED` | FR-39 |
 | Shops | ✅ Real data | `GET /admin/shops`, `GET /admin/shops/{id}`, `POST …/verify · reject · suspend · reactivate` (payout status shown read-only) | FR-35 – FR-37, FR-73, FR-81 |
 | Payouts | ✅ Real data | `GET /admin/payouts` (view only; payouts and retries are automatic) | FR-78, FR-79 |
-| Reviews | ✅ Real data | `GET /admin/reviews` (read-only) | FR-38 |
+| Reviews | ✅ Real data | `GET /admin/reviews` (read-only, with the shop's reply) | FR-38, FR-27 |
+| Notifications (bell) | ✅ Real data | `GET /notifications`, `POST /notifications/{id}/read`, `POST /notifications/read-all` | FR-16, §10 |
 | Profile | ✅ Real data | `GET/PATCH /users/me`, `POST /users/me/password` | — |
 | Sign-in & password reset | ✅ Real data | `/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/password/forgot`, `/auth/password/reset` | — |
 | Bookings | ⏳ Coming soon | `GET /admin/bookings`, `GET /admin/bookings/{id}` *(not in API)* | FR-38, FR-50 |
