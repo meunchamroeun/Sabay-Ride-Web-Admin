@@ -35,6 +35,13 @@ export const tokenStore = {
     } catch {
       value = null;
     }
+    // A sample-data session left from before the demo was switched off: sign it out.
+    if (value?.demo && process.env.NEXT_PUBLIC_DEMO_ADMIN !== "true") {
+      safeStorage()?.removeItem(KEY);
+      value = null;
+      cache = { raw: null, value };
+      return value;
+    }
     cache = { raw, value };
     return value;
   },

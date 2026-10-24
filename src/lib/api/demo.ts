@@ -8,8 +8,11 @@ import { ApiError } from "./errors";
 import { addAudit, buildOps, handleOps, monthTotals, NOT_HANDLED, page, type OpsData } from "./demo-ops";
 import type { AdminShop, AppNotification, AuthUser, PayoutRow, Photo, Profile, Review, ShopStatus } from "./types";
 
-/** Turned off by setting NEXT_PUBLIC_DEMO_ADMIN=false (e.g. once real admin accounts exist). */
-export const DEMO_ENABLED = process.env.NEXT_PUBLIC_DEMO_ADMIN !== "false";
+/**
+ * Off by default: the dashboard shows real API data only. Set NEXT_PUBLIC_DEMO_ADMIN=true for a
+ * local sample-data admin (e.g. for UI work while no ADMIN account exists).
+ */
+export const DEMO_ENABLED = process.env.NEXT_PUBLIC_DEMO_ADMIN === "true";
 
 /** Sign-in for the demo admin. Not a real account — it only unlocks the sample data. */
 export const DEMO_ACCOUNT = { identifier: "admin1", altIdentifier: "+85500000001", password: "Demo1234!" };

@@ -44,15 +44,13 @@ The dashboard is an installable web app. On Android Chrome use **Install app**, 
 - **Offline:** `public/sw.js` shows `public/offline.html` when there is no connection. It never caches pages or API data, because admin data is private and live.
 - **Manifest and icons:** `src/app/manifest.ts` and `public/icons/`. The service worker registers only in production builds.
 
-## Demo admin (testing without a real admin account)
+## Real data only
 
-Until the backend team issues an ADMIN account, sign in on the login page with:
+The dashboard signs in real `ADMIN` accounts and shows only data from the API you pick on the login page (Production or Staging). Screens whose endpoints the API does not have yet show **Coming soon** with the endpoints they need.
 
-| Username | Password |
-| --- | --- |
-| `admin1` (or `+85500000001`) | `Demo1234!` |
+There is no ADMIN account yet: the test accounts the backend shared are `CUSTOMER` and `SHOP_OWNER`, which the dashboard refuses with "This account is not an administrator".
 
-The demo answers the admin endpoints that exist in the API from sample data in the browser (`src/lib/api/demo.ts`): 10 shops, 16 payouts, 12 reviews and a dashboard. Screens whose endpoints the API does not have yet show **Coming soon** for the demo too, so the demo never shows features the real API cannot back. Approve, reject, suspend, payout setup and payout retry all work and stay until the page is reloaded or you sign out. Nothing is sent to the real servers, and the top bar shows a **Demo data** badge. Set `NEXT_PUBLIC_DEMO_ADMIN=false` to remove it once real admin accounts exist.
+**Local sample data (developers only):** set `NEXT_PUBLIC_DEMO_ADMIN=true` in `.env.local` to enable an in-browser sample admin (`src/lib/api/demo.ts`) for UI work. Never set it in Vercel. Any sample session left in a browser is signed out automatically while the flag is off.
 
 ## Screens → API
 

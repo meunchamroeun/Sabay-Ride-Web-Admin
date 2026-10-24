@@ -285,15 +285,11 @@ curl -i -X POST http://localhost:3000/backend/staging/api/v1/auth/login -H 'Cont
 
 ---
 
-## 8. Demo admin (no backend account needed)
+## 8. Real data only
 
-Until an `ADMIN` account exists, sign in on the login page with:
+The dashboard shows only what the selected API returns. It needs an `ADMIN` account (see §9); the shared test accounts are `CUSTOMER` / `SHOP_OWNER` and are refused at sign-in.
 
-| Username | Password |
-| --- | --- |
-| `admin1` (or `+85500000001`) | `Demo1234!` |
-
-Demo sessions never call the API. `src/lib/api/demo.ts` answers the paths that exist in the API with sample data: 10 shops, 16 payouts and 12 reviews. "Coming soon" screens stay Coming soon in the demo too. Approve, reject, suspend, payout setup and retry all work in memory until reload or sign-out, and a **Demo data** badge is shown in the top bar. Disable it with `NEXT_PUBLIC_DEMO_ADMIN=false`.
+For local UI work without an admin account, a developer can set `NEXT_PUBLIC_DEMO_ADMIN=true` in `.env.local`: `src/lib/api/demo.ts` then answers the existing admin paths with sample data in the browser and never calls the API. It is off by default and must not be set in Vercel.
 
 ---
 
