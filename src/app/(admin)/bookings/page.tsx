@@ -126,8 +126,8 @@ function BookingsScreen() {
                       <p className="font-mono text-xs font-medium">#{shortId(b.id)}</p>
                       <p className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Motorbike className="size-3" />
-                        {b.items[0]?.model}
-                        {b.items.length > 1 && ` +${b.items.length - 1}`}
+                        {b.bookedModel || b.items?.[0]?.model || "—"}
+                        {Boolean(b.items && b.items.length > 1) && ` +${b.items.length - 1}`}
                         {b.pickupMethod === "DELIVERY" && <Truck className="ml-1 size-3" />}
                       </p>
                     </TableCell>

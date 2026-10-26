@@ -224,17 +224,44 @@ The item schema is not published (springdoc collision on `PageResponse`), so the
 | `PATCH /users/me` | Body `{ "fullName": "…", "preferredLanguage": "km" \| "en" }`. Only sent fields change. |
 | `POST /users/me/password` | Change password (see §3.6). |
 
-### Screens marked "Coming soon"
+### Bookings — `/bookings`
 
-**Bookings**, **Motorbikes**, **Users**, **Reports**, **Audit log** and **Travel blog** are built to the SRS, but the API (Production and Staging) has none of their endpoints yet. Until it does:
-- The page shows **Coming soon** and lists the endpoints it needs, for every sign-in including the demo admin. Nothing is called, and no sample data is shown.
-- The sidebar and the phone "More" menu mark them **Soon**. On phones, Reviews takes the Bookings slot in the bottom bar.
+| Call | Purpose |
+| --- | --- |
+| `GET /admin/bookings?status=&q=&page=&size=` | List bookings filtered by status or search. |
+| `GET /admin/bookings/{id}` | Booking detail including items, fee breakdown, and status history. |
 
-When the backend ships one, add its key to `NEXT_PUBLIC_API_READY` (e.g. `bookings,users`) and redeploy; the page then calls the paths in **§10**. Keys: `bookings`, `motorbikes`, `users`, `reports`, `audit`, `blog` (`src/config/api-features.ts`).
+### Motorbikes — `/motorbikes`
 
-Motorbikes stay view-only for admins even then: the SRS gives "Add or edit motorbikes" to shop owners only (§5.1), and the API only has `/shops/me/motorbikes` for owners.
+| Call | Purpose |
+| --- | --- |
+| `GET /admin/motorbikes?status=&q=&page=&size=` | Platform-wide fleet view across all shops. |
 
-The top-bar bell shows the signed-in admin's notifications from `GET /notifications` (SRS §10 sends the admin **payout failed**), plus the failed-payout count as the FR-79 flag. Roadside assistance is handled by shops in the app, so it has no admin screen.
+### Users — `/users`
+
+| Call | Purpose |
+| --- | --- |
+| `GET /admin/users?role=&active=&q=&page=&size=` | List customers, shop owners, and staff. |
+| `POST /admin/users/{id}/suspend` | Suspend user account with reason. |
+| `POST /admin/users/{id}/reactivate` | Reinstate a suspended user account. |
+
+### Travel blog — `/blog`
+
+| Call | Purpose |
+| --- | --- |
+| `GET /admin/blog/posts?status=&page=&size=` | List all articles including drafts. |
+| `POST /admin/blog/posts` | Create a new blog post draft. |
+| `PATCH /admin/blog/posts/{id}` | Update article title, slug, content, or cover. |
+| `POST /admin/blog/posts/{id}/publish` | Publish an article. |
+| `POST /admin/blog/posts/{id}/unpublish` | Return an article to draft. |
+
+### Screens waiting for the API
+
+**Reports** (`GET /admin/reports`) and **Audit log** (`GET /admin/audit-logs`) are built to the SRS, but the API does not expose their endpoints yet. Until they are provided by the backend:
+- The page shows **Coming soon** and lists the endpoints it needs.
+- The sidebar and the phone "More" menu mark them **Soon**.
+
+When the backend ships them, add their keys to `NEXT_PUBLIC_API_READY` (e.g. `reports,audit`) in Vercel or set them in `src/config/api-features.ts`.
 
 ---
 
@@ -305,11 +332,9 @@ For local UI work without an admin account, a developer can set `NEXT_PUBLIC_DEM
 
 ---
 
-## 10. Proposed admin endpoints (SRS §14.4, §14.8)
+## 10. Admin endpoints status (SRS §14.4, §14.8)
 
-None of these exist in the API yet (checked against Production and Staging); the matching screens show "Coming soon" until they do. These are the paths the screens will call. Field names follow the SRS data dictionary (§16) in camelCase. Lists use the standard page envelope `{ content, page, size, totalElements }` (default size 20, max 100). TypeScript shapes are in `src/lib/api/types.ts`, and working sample responses come from the demo in `src/lib/api/demo-ops.ts`.
-
-All of them are ADMIN-only and should write an audit-log entry for every change (NFR-19).
+**Bookings, Motorbikes, Users, Blog, and Payout retry** are now implemented and live in both Production and Staging. **Reports** and **Audit logs** remain pending backend development. Field names follow the SRS data dictionary (§16) in camelCase. Lists use the standard page envelope `{ content, page, size, totalElements }` (default size 20, max 100). TypeScript shapes are in `src/lib/api/types.ts`.
 
 ### 10.1 Bookings — FR-38, FR-50
 

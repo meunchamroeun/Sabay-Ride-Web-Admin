@@ -54,23 +54,23 @@ There is no ADMIN account yet: the test accounts the backend shared are `CUSTOME
 
 ## Screens → API
 
-Checked against the live OpenAPI spec of Production and Staging (identical, 73 operations, last checked 24 Oct 2026). The October update added notifications, shop staff and review replies; the admin-only endpoints below are still missing.
+Checked against the live OpenAPI spec of Production and Staging (`https://sabayride.cavkim.tech/swagger-ui.html`). The latest update adds the administrator endpoints for Bookings, Motorbikes, Users, and Blog posts, plus manual payout retry.
 
 | Screen | Status | Endpoints | SRS |
 | --- | --- | --- | --- |
-| Dashboard | ✅ Real data | `GET /admin/dashboard`, `/admin/shops?status=PENDING`, `/admin/reviews`, `/admin/payouts?status=FAILED` | FR-39 |
-| Shops | ✅ Real data | `GET /admin/shops`, `GET /admin/shops/{id}`, `POST …/verify · reject · suspend · reactivate` (payout status shown read-only) | FR-35 – FR-37, FR-73, FR-81 |
-| Payouts | ✅ Real data | `GET /admin/payouts` (view only; payouts and retries are automatic) | FR-78, FR-79 |
-| Reviews | ✅ Real data | `GET /admin/reviews` (read-only, with the shop's reply) | FR-38, FR-27 |
+| Dashboard | ✅ Real data | `GET /admin/dashboard`, `/admin/shops?status=PENDING`, `/admin/payouts?status=FAILED` | FR-39 |
+| Shops | ✅ Real data | `GET /admin/shops`, `GET /admin/shops/{id}`, `POST …/verify · reject · suspend · reactivate` | FR-35 – FR-37, FR-73, FR-81 |
+| Bookings | ✅ Real data | `GET /admin/bookings`, `GET /admin/bookings/{id}` | FR-38, FR-50 |
+| Motorbikes | ✅ Real data | `GET /admin/motorbikes` (view only; shops manage their fleet) | FR-38 |
+| Users | ✅ Real data | `GET /admin/users`, `POST …/suspend · reactivate` | FR-37 |
+| Payouts | ✅ Real data | `GET /admin/payouts`, `POST /admin/payouts/{id}/retry` | FR-78, FR-79 |
+| Travel blog | ✅ Real data | `GET/POST /admin/blog/posts`, `PATCH /admin/blog/posts/{id}`, `POST …/publish · unpublish` | FR-65 |
+| Reviews | ✅ Real data | `GET /admin/reviews` (read-only, with shop owner replies) | FR-38, FR-27 |
 | Notifications (bell) | ✅ Real data | `GET /notifications`, `POST /notifications/{id}/read`, `POST /notifications/read-all` | FR-16, §10 |
 | Profile | ✅ Real data | `GET/PATCH /users/me`, `POST /users/me/password` | — |
 | Sign-in & password reset | ✅ Real data | `/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/password/forgot`, `/auth/password/reset` | — |
-| Bookings | ⏳ Coming soon | `GET /admin/bookings`, `GET /admin/bookings/{id}` *(not in API)* | FR-38, FR-50 |
-| Motorbikes | ⏳ Coming soon | `GET /admin/motorbikes` *(not in API)* — view only; shops add and edit motorbikes | FR-38 |
-| Users | ⏳ Coming soon | `GET /admin/users`, `POST …/suspend · reactivate` *(not in API)* | FR-37 |
-| Reports | ⏳ Coming soon | `GET /admin/reports?period=` + CSV export *(not in API)* | FR-40 |
-| Audit log | ⏳ Coming soon | `GET /admin/audit-logs` *(not in API)* | FR-41 |
-| Travel blog | ⏳ Coming soon | `/admin/blog/posts` CRUD + publish *(not in API)* | FR-65 |
+| Reports | ⏳ Waiting for API | `GET /admin/reports?period=` + CSV export *(pending backend)* | FR-40 |
+| Audit log | ⏳ Waiting for API | `GET /admin/audit-logs` *(pending backend)* | FR-41 |
 
 **Scope follows the SRS.** Features the SRS does not give the administrator are left out even when the API has them: editing a shop's payout account or commission (`PATCH /admin/shops/{id}/payout`, owner-only in §5.1), retrying payouts by hand (`POST /admin/payouts/{id}/retry`, automatic per FR-78/79), deleting blog posts (FR-65 lists create, edit, publish, unpublish), CSV export outside Reports (FR-40), social sign-in (FR-01/02), and alerts other than failed payouts (§10).
 

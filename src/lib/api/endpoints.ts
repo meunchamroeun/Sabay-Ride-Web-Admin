@@ -75,9 +75,12 @@ export const adminApi = {
   suspend: (id: string, reason: string) =>
     api<AdminShop>(`/admin/shops/${id}/suspend`, { method: "POST", body: { reason } }),
   reactivate: (id: string) => api<AdminShop>(`/admin/shops/${id}/reactivate`, { method: "POST" }),
+  updateShopPayout: (id: string, body: { paymentSetupComplete: boolean; payoutSharePercent?: number }) =>
+    api<AdminShop>(`/admin/shops/${id}/payout`, { method: "PATCH", body }),
 
   payouts: (status: PaymentStatus | undefined, page = 0, size = 20) =>
     api<Page<PayoutRow>>("/admin/payouts", { query: { status, page, size } }),
+  retryPayout: (id: string) => api<PayoutRow>(`/admin/payouts/${id}/retry`, { method: "POST" }),
 
   reviews: (page = 0, size = 20) => api<Page<Review>>("/admin/reviews", { query: { page, size } }),
 };
@@ -90,14 +93,37 @@ export const publicApi = {
 };
 
 /*
- * SRS admin screens without API endpoints yet (FR-37, 38, 40, 41, 65). Paths are the proposals in
- * api-doc.md §10. The demo admin answers them; a real backend returns 404 until they are built,
- * which the screens show as "waiting for the API".
+ * Admin screens with live backend endpoints: bookings, motorbikes, users, and blog.
+ * Reports and audit logs show "waiting for the API" until their endpoints are added.
  */
 export const opsApi = {
-  bookings: (q: { status?: BookingStatus; q?: string; page?: number; size?: number }) =>
-    api<Page<AdminBooking>>("/admin/bookings", { query: { size: 20, ...q } }),
-  booking: (id: string) => api<AdminBooking>(`/admin/bookings/${id}`),
+  bookings: async (q: { status?: BookingStatus; q?: string; page?: number; size?: number }) => {
+    const res = await api<Page<AdminBooking>>("/admin/bookings", { query: { size: 20, ...q } });
+    if (res?.content) {
+      res.content = res.content.map((b) => ({
+        ...b,
+        items: b.items ?? [],
+      }));
+    }
+    return res;
+  },
+  booking: async (id: string): Promise<AdminBooking> => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const raw = await api<any>(`/admin/bookings/${id}`);
+    if (raw && typeof raw === "object" && "booking" in raw && raw.booking) {
+      return {
+        ...raw.booking,
+        ...raw,
+        items: raw.items ?? [],
+        history: raw.history ?? [],
+      };
+    }
+    return {
+      ...raw,
+      items: raw?.items ?? [],
+      history: raw?.history ?? [],
+    };
+  },
 
   motorbikes: (q: { status?: MotorbikeStatus; q?: string; page?: number; size?: number }) =>
     api<Page<AdminMotorbike>>("/admin/motorbikes", { query: { size: 20, ...q } }),

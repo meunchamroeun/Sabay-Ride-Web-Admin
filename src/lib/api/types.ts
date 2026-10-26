@@ -173,10 +173,13 @@ export interface AdminBooking {
   startDate: string;
   endDate: string;
   rentalDays: number;
+  bookedModel?: string;
   status: BookingStatus;
   paymentOption: "PAY_NOW" | "PAY_AT_SHOP";
   pickupMethod: "SELF_PICKUP" | "DELIVERY";
   deliveryAddress?: string;
+  customerNote?: string;
+  rejectionReason?: string;
   subtotal: Money;
   deliveryFee: Money;
   total: Money;
@@ -184,10 +187,17 @@ export interface AdminBooking {
   amountCash: Money;
   commissionAmount: Money;
   payoutAmount: Money;
+  amountForfeited?: boolean;
+  lateFee?: Money;
   payoutStatus: "PENDING" | "PAID" | "FAILED" | "NOT_APPLICABLE";
   items: BookingItem[];
   history?: BookingHistoryEntry[];
   createdAt: string;
+}
+
+export interface AdminShopPayoutInput {
+  paymentSetupComplete: boolean;
+  payoutSharePercent?: number;
 }
 
 export type MotorbikeStatus = "ACTIVE" | "MAINTENANCE" | "INACTIVE";
@@ -215,6 +225,7 @@ export interface AdminUser {
   email?: string;
   roles: Role[];
   active: boolean;
+  suspensionReason?: string;
   phoneVerified: boolean;
   createdAt: string;
   lastLoginAt?: string;

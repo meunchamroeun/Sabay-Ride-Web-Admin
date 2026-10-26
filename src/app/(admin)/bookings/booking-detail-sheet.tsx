@@ -64,23 +64,42 @@ export function BookingDetailSheet({ bookingId, onOpenChange }: { bookingId: str
                 />
               </section>
 
+              {b.rejectionReason && (
+                <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm">
+                  <p className="text-xs font-medium text-destructive">{t("shops.rejectionReason")}</p>
+                  <p className="mt-1">{b.rejectionReason}</p>
+                </div>
+              )}
+
               <section>
                 <h3 className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("bookings.items")}</h3>
                 <ul className="space-y-2">
-                  {b.items.map((it) => (
-                    <li key={it.motorbikeId} className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
+                  {b.items && b.items.length > 0 ? (
+                    b.items.map((it) => (
+                      <li key={it.motorbikeId || it.plateNumber || it.model} className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
+                        <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground">
+                          <Motorbike className="size-4" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-medium">{it.model}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {it.plateNumber} · {formatUsd(it.pricePerDay, lng)} / {t("bookings.day")}
+                          </p>
+                        </div>
+                        <span className="font-medium tabular">{formatUsd(it.lineTotal, lng)}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
                       <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground">
                         <Motorbike className="size-4" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium">{it.model}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {it.plateNumber} · {formatUsd(it.pricePerDay, lng)} / {t("bookings.day")}
-                        </p>
+                        <p className="truncate font-medium">{b.bookedModel || "—"}</p>
                       </div>
-                      <span className="font-medium tabular">{formatUsd(it.lineTotal, lng)}</span>
+                      <span className="font-medium tabular">{formatUsd(b.total, lng)}</span>
                     </li>
-                  ))}
+                  )}
                 </ul>
               </section>
 

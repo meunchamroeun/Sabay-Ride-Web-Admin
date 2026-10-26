@@ -1,13 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { CheckCircle2, RotateCw } from "lucide-react";
+import { toast } from "sonner";
+import { ApiError } from "@/lib/api/client";
 import { adminApi } from "@/lib/api/endpoints";
 import type { PaymentStatus } from "@/lib/api/types";
 import { formatDate, formatKhr, formatUsd, shortId } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/common/page-header";
 import { Pager } from "@/components/common/pager";
 import { EmptyState, ErrorState } from "@/components/common/states";
@@ -34,8 +37,14 @@ export default function PayoutsPage() {
     queryFn: () => adminApi.payouts(status, page, PAGE_SIZE),
   });
 
-  // View only: payouts and their retries are automatic (SRS FR-78, FR-79); a payout that still
-  // fails after three retries is flagged here for the administrator's attention.
+  const retry = useMutation({
+    mutationFn: (paymentId: string) => adminApi.retryPayout(paymentId),
+    onSuccess: () => {
+      toast.success(t("payouts.retried"));
+      query.refetch();
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? `${e.message} (${e.code})` : String(e)),
+  });
 
   return (
     <>
@@ -81,14 +90,15 @@ export default function PayoutsPage() {
                   <TableHead>{t("payouts.col.status")}</TableHead>
                   <TableHead className="text-center">{t("payouts.col.attempts")}</TableHead>
                   <TableHead>{t("payouts.col.reason")}</TableHead>
-                  <TableHead className="pr-4">{t("payouts.col.created")}</TableHead>
+                  <TableHead>{t("payouts.col.created")}</TableHead>
+                  <TableHead className="pr-4 text-right" />
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {query.isLoading &&
                   Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i}>
-                      <TableCell colSpan={7} className="px-4">
+                      <TableCell colSpan={8} className="px-4">
                         <Skeleton className="h-8 w-full" />
                       </TableCell>
                     </TableRow>
@@ -125,8 +135,22 @@ export default function PayoutsPage() {
                         <span className="text-xs text-muted-foreground">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="pr-4 text-xs whitespace-nowrap text-muted-foreground">
+                    <TableCell className="text-xs whitespace-nowrap text-muted-foreground">
                       {formatDate(p.createdAt, lng, true)}
+                    </TableCell>
+                    <TableCell className="pr-4 text-right">
+                      {p.status === "FAILED" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs"
+                          disabled={retry.isPending}
+                          onClick={() => retry.mutate(p.paymentId)}
+                        >
+                          <RotateCw className={cn("mr-1 size-3", retry.isPending && "animate-spin")} />
+                          {t("common.retry", { defaultValue: "Retry" })}
+                        </Button>
+                      )}
                     </TableCell>
                   </motion.tr>
                 ))}

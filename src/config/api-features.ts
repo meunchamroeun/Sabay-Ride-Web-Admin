@@ -19,12 +19,12 @@ export const FEATURE_ENDPOINTS: Record<PendingFeature, string[]> = {
 };
 
 const READY: Record<PendingFeature, boolean> = {
-  bookings: false,
-  motorbikes: false,
-  users: false,
+  bookings: true,
+  motorbikes: true,
+  users: true,
   reports: false,
   audit: false,
-  blog: false,
+  blog: true,
 };
 
 const fromEnv = new Set(
