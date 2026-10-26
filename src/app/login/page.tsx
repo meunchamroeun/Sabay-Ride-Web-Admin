@@ -10,7 +10,7 @@ import { z } from "zod";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertCircle, ArrowLeftRight, Info, ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, Phone } from "lucide-react";
+import { AlertCircle, ArrowLeftRight, ArrowRight, CheckCircle2, Eye, EyeOff, Info, Loader2, Lock, Mail, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { API_ENV_NAMES, hostOf, type ApiEnv } from "@/config/env";
 import { setApiEnv, useApiEnv } from "@/lib/api/api-env";
@@ -50,6 +50,8 @@ export default function LoginPage() {
   const router = useRouter();
   const { login, session, isAdmin, ready, logout } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [shake, setShake] = useState(0);
   const [showPw, setShowPw] = useState(false);
   // Phone the reset code was sent to; opens the "enter code + new password" step.
   const [resetPhone, setResetPhone] = useState<string | null>(null);
@@ -103,10 +105,15 @@ export default function LoginPage() {
       if (!s.user.roles.includes("ADMIN")) {
         await logout();
         setError(t("auth.notAdmin"));
+        setShake((v) => v + 1);
         return;
       }
-      router.replace("/");
+      setSuccess(true);
+      setTimeout(() => {
+        router.replace("/");
+      }, 700);
     } catch (e) {
+      setShake((v) => v + 1);
       if (e instanceof ApiError && e.status === 401) setError(t("auth.invalid"));
       else if (e instanceof ApiError) setError(t("auth.signInFailed", { detail: `${e.message} (${e.status})` }));
       else setError(t("auth.offline"));
@@ -204,7 +211,13 @@ export default function LoginPage() {
               )}
             </AnimatePresence>
 
-            <form onSubmit={form.handleSubmit(onSubmit)} className="mt-5 space-y-4" noValidate>
+            <motion.form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="mt-5 space-y-4"
+              noValidate
+              animate={shake > 0 ? { x: [-10, 10, -7, 7, -4, 4, 0] } : { x: 0 }}
+              transition={{ duration: 0.4 }}
+            >
               <div className="form-in space-y-2">
                 <label
                   htmlFor="identifier"
@@ -269,15 +282,81 @@ export default function LoginPage() {
                 <FieldError id="password-error" message={errors.password?.message} />
               </div>
 
-              <button
+              <motion.button
                 type="submit"
-                disabled={busy}
-                className="form-in flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-foreground text-[15px] font-semibold text-background transition-[background-color,scale] hover:bg-foreground/90 active:scale-[0.99] disabled:bg-foreground/60 dark:bg-[#f2f2f2] dark:text-black dark:hover:bg-white"
+                disabled={busy || success}
+                whileHover={!busy && !success ? { scale: 1.015, y: -1 } : {}}
+                whileTap={!busy && !success ? { scale: 0.98 } : {}}
+                className={cn(
+                  "group/btn form-in relative flex h-11 w-full items-center justify-center overflow-hidden rounded-[10px] text-[15px] font-semibold transition-[background-color,box-shadow,color] duration-300 shadow-sm",
+                  success
+                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-500/30"
+                    : "bg-foreground text-background hover:bg-foreground/90 hover:shadow-md dark:bg-[#f2f2f2] dark:text-black dark:hover:bg-white",
+                  busy && "cursor-wait opacity-95",
+                )}
               >
-                {busy && <Loader2 className="size-4 animate-spin" />}
-                {busy ? t("auth.signingIn") : t("auth.signIn")}
-              </button>
-            </form>
+                {/* Continuous animated shimmer beam on top when busy */}
+                {busy && (
+                  <motion.div
+                    className="absolute inset-x-0 top-0 h-[2.5px] bg-gradient-to-r from-transparent via-amber-400 to-transparent dark:via-primary"
+                    initial={{ x: "-100%" }}
+                    animate={{ x: "100%" }}
+                    transition={{ repeat: Infinity, duration: 1, ease: "easeInOut" }}
+                  />
+                )}
+
+                {/* Shimmer sweep on hover when idle */}
+                {!busy && !success && (
+                  <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/15 to-transparent transition-transform duration-700 group-hover/btn:translate-x-full dark:via-black/10" />
+                )}
+
+                <AnimatePresence mode="wait">
+                  {success ? (
+                    <motion.span
+                      key="success"
+                      initial={{ opacity: 0, scale: 0.7, y: 8 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ type: "spring", stiffness: 450, damping: 25 }}
+                      className="flex items-center gap-2"
+                    >
+                      <motion.span
+                        initial={{ scale: 0, rotate: -45 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 22, delay: 0.05 }}
+                      >
+                        <CheckCircle2 className="size-4.5 text-white" />
+                      </motion.span>
+                      <span>{t("common.success", { defaultValue: "Success!" })}</span>
+                    </motion.span>
+                  ) : busy ? (
+                    <motion.span
+                      key="busy"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-center gap-2"
+                    >
+                      <Loader2 className="size-4 animate-spin text-primary dark:text-amber-500" />
+                      <span>{t("auth.signingIn")}</span>
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="idle"
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-center gap-2"
+                    >
+                      <span>{t("auth.signIn")}</span>
+                      <ArrowRight className="size-4 transition-transform duration-200 group-hover/btn:translate-x-1" />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.button>
+            </motion.form>
 
             <div className="mt-6 flex flex-col items-center gap-2 lg:hidden">
               <span className="text-[11px] text-muted-foreground">{t("auth.connectedTo")}</span>
