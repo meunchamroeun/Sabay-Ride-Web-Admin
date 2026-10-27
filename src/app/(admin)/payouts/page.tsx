@@ -24,7 +24,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { PayoutDetailSheet } from "./payout-detail-sheet";
 
-const FILTERS: (PaymentStatus | "ALL")[] = ["FAILED", "PENDING", "PAID", "ALL"];
+const FILTERS: (PaymentStatus | "ALL")[] = ["ALL", "PENDING", "PAID", "FAILED"];
 const PAGE_SIZE = 20;
 
 export default function PayoutsPage() {
@@ -38,17 +38,22 @@ export default function PayoutsPage() {
 function PayoutsScreen() {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
-  const [filter, setFilter] = useState<PaymentStatus | "ALL">("FAILED");
+  const searchParams = useSearchParams();
+  const statusParam = searchParams.get("status")?.toUpperCase();
+  const initialFilter: PaymentStatus | "ALL" =
+    statusParam && (FILTERS as string[]).includes(statusParam) ? (statusParam as PaymentStatus) : "ALL";
+  const [filter, setFilter] = useState<PaymentStatus | "ALL">(initialFilter);
   const [page, setPage] = useState(0);
   const status = filter === "ALL" ? undefined : filter;
 
-  const openParam = useSearchParams().get("open");
+  const openParam = searchParams.get("open");
   const [selectedPayout, setSelectedPayout] = useState<PayoutRow | null>(null);
   const [dismissed, setDismissed] = useState<string | null>(null);
 
   const query = useQuery({
     queryKey: ["payouts", status ?? "ALL", page, PAGE_SIZE],
     queryFn: () => adminApi.payouts(status, page, PAGE_SIZE),
+    refetchInterval: 8_000,
   });
 
   const retry = useMutation({
