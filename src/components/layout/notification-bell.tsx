@@ -34,12 +34,12 @@ export function NotificationBell() {
   const feed = useQuery({
     queryKey: ["notifications"],
     queryFn: () => notificationsApi.list(0, 10),
-    refetchInterval: 60_000,
+    refetchInterval: 8_000,
   });
   const failed = useQuery({
     queryKey: ["payouts", "FAILED", 0, 1],
     queryFn: () => adminApi.payouts("FAILED", 0, 1),
-    refetchInterval: 60_000,
+    refetchInterval: 8_000,
   });
 
   const items = feed.data?.content ?? [];

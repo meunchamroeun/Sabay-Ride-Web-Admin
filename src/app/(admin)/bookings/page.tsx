@@ -5,11 +5,12 @@ import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { Search, Truck } from "lucide-react";
+import { RotateCw, Search, Truck } from "lucide-react";
 import { Motorbike } from "@/components/common/motorbike-icon";
 import { opsApi } from "@/lib/api/endpoints";
 import { BOOKING_STATUSES, type BookingStatus } from "@/lib/api/types";
 import { formatDate, formatKhr, formatUsd, shortId } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { useDebounced } from "@/hooks/use-debounced";
 import { ApiPendingOrError } from "@/components/common/api-pending";
 import { PageHeader } from "@/components/common/page-header";
@@ -17,6 +18,7 @@ import { Pager } from "@/components/common/pager";
 import { EmptyState } from "@/components/common/states";
 import { StatusBadge } from "@/components/common/status-badge";
 import { BookingDetailSheet } from "./booking-detail-sheet";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -57,6 +59,7 @@ function BookingsScreen() {
   const query = useQuery({
     queryKey: ["admin-bookings", status ?? "ALL", search, page, PAGE_SIZE],
     queryFn: () => opsApi.bookings({ status, q: search || undefined, page, size: PAGE_SIZE }),
+    refetchInterval: 8_000,
   });
 
   return (
@@ -64,6 +67,17 @@ function BookingsScreen() {
       <PageHeader
         title={t("bookings.title")}
         subtitle={t("bookings.subtitle")}
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => query.refetch()}
+            disabled={query.isFetching}
+          >
+            <RotateCw className={cn("size-3.5", query.isFetching && "animate-spin")} />
+            {t("common.refresh")}
+          </Button>
+        }
       />
 
       <Card className="gap-0 overflow-hidden py-0">

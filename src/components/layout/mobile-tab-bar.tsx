@@ -66,8 +66,8 @@ export function MobileTabBar() {
   const pathname = usePathname();
   const apiEnv = useApiEnv();
   const [moreOpen, setMoreOpen] = useState(false);
-  const pending = useQuery({ queryKey: ["shops", "PENDING", 0, 1], queryFn: () => adminApi.shops("PENDING", 0, 1) });
-  const failed = useQuery({ queryKey: ["payouts", "FAILED", 0, 1], queryFn: () => adminApi.payouts("FAILED", 0, 1) });
+  const pending = useQuery({ queryKey: ["shops", "PENDING", 0, 1], queryFn: () => adminApi.shops("PENDING", 0, 1), refetchInterval: 8_000 });
+  const failed = useQuery({ queryKey: ["payouts", "FAILED", 0, 1], queryFn: () => adminApi.payouts("FAILED", 0, 1), refetchInterval: 8_000 });
   const counts = { shops: pending.data?.totalElements ?? 0, payouts: failed.data?.totalElements ?? 0 };
 
   const active = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));

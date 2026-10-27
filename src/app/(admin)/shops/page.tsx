@@ -5,15 +5,17 @@ import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { Check, Search, Store } from "lucide-react";
+import { Check, RotateCw, Search, Store } from "lucide-react";
 import { adminApi } from "@/lib/api/endpoints";
 import type { ShopStatus } from "@/lib/api/types";
 import { formatDate } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/common/page-header";
 import { Pager } from "@/components/common/pager";
 import { EmptyState, ErrorState } from "@/components/common/states";
 import { StatusBadge } from "@/components/common/status-badge";
 import { ShopDetailSheet } from "./shop-detail-sheet";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -51,6 +53,7 @@ function ShopsPage() {
   const query = useQuery({
     queryKey: ["shops", status, page, PAGE_SIZE],
     queryFn: () => adminApi.shops(status, page, PAGE_SIZE),
+    refetchInterval: 8_000,
   });
 
   const rows = useMemo(() => {
@@ -63,7 +66,21 @@ function ShopsPage() {
 
   return (
     <>
-      <PageHeader title={t("shops.title")} subtitle={t("shops.subtitle")} />
+      <PageHeader
+        title={t("shops.title")}
+        subtitle={t("shops.subtitle")}
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => query.refetch()}
+            disabled={query.isFetching}
+          >
+            <RotateCw className={cn("size-3.5", query.isFetching && "animate-spin")} />
+            {t("common.refresh")}
+          </Button>
+        }
+      />
 
       <Card className="gap-0 overflow-hidden py-0">
         <div className="flex flex-col gap-3 border-b p-3 sm:flex-row sm:items-center sm:justify-between">
