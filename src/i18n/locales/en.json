@@ -456,7 +456,16 @@
     "delete": "Delete",
     "saveDraft": "Save draft",
     "deleteTitle": "Delete this post?",
-    "deleteHint": "\"{{title}}\" will be removed permanently."
+    "deleteHint": "\"{{title}}\" will be removed permanently.",
+    "split": "Split view",
+    "words": "words",
+    "chars": "characters",
+    "readTime": "min read",
+    "search": "Search articles by title or keyword...",
+    "total": "Total articles",
+    "coverPreview": "Cover preview",
+    "removeCover": "Remove",
+    "regenerateSlug": "Regenerate slug"
   },
   "notify": {
     "title": "Notifications",
