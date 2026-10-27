@@ -5,7 +5,7 @@ import { BadgeCheck, Ban, Calendar, Clock, Loader2, Mail, Phone, RotateCcw, Shie
 import type { AdminUser } from "@/lib/api/types";
 import { formatDate, initials, shortId } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -60,6 +60,13 @@ export function UserDetailSheet({
               {/* Profile Card */}
               <div className="flex items-center gap-4 rounded-2xl border bg-muted/30 p-4">
                 <Avatar className="size-14 border-2 border-background shadow-xs">
+                  {(user.avatarUrl || user.photoUrl || user.imageUrl || user.profileImageUrl) && (
+                    <AvatarImage
+                      src={user.avatarUrl || user.photoUrl || user.imageUrl || user.profileImageUrl}
+                      alt={user.fullName}
+                      className="object-cover"
+                    />
+                  )}
                   <AvatarFallback className="bg-primary/10 text-base font-semibold text-primary">
                     {initials(user.fullName)}
                   </AvatarFallback>

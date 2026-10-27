@@ -54,6 +54,7 @@ export function ShopDetailSheet({
   const [reasonFor, setReasonFor] = useState<ReasonAction | null>(null);
   const [reason, setReason] = useState("");
   const [confirmVerify, setConfirmVerify] = useState(false);
+  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
 
   const shop = useQuery({
     queryKey: ["shop", shopId],
@@ -133,26 +134,37 @@ export function ShopDetailSheet({
                 </h3>
                 {photos.isLoading ? (
                   <Skeleton className="h-28 w-full" />
-                ) : photos.data?.length ? (
-                  <div className="grid grid-cols-3 gap-2">
-                    {photos.data.slice(0, 6).map((p, i) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        key={p.id}
-                        src={p.imageUrl ?? p.url}
-                        alt=""
-                        className={cn(
-                          "aspect-square w-full rounded-xl bg-muted object-cover",
-                          i === 0 && "col-span-2 row-span-2",
-                        )}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 rounded-xl bg-muted p-4 text-sm text-muted-foreground">
-                    <ImageOff className="size-4" /> {t("shops.noPhotos")}
-                  </div>
-                )}
+                ) : (() => {
+                    const displayPhotos = (photos.data && photos.data.length > 0)
+                      ? photos.data
+                      : (s?.photoUrl || s?.imageUrl || s?.primaryPhotoUrl)
+                        ? [{ id: "primary", imageUrl: s.photoUrl || s.imageUrl || s.primaryPhotoUrl, isPrimary: true }]
+                        : [];
+                    return displayPhotos.length ? (
+                      <div className="grid grid-cols-3 gap-2">
+                        {displayPhotos.slice(0, 6).map((p, i) => {
+                          const src = p.imageUrl ?? p.url;
+                          return (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              key={p.id}
+                              src={src}
+                              alt=""
+                              onClick={() => src && setPreviewPhoto(src)}
+                              className={cn(
+                                "aspect-square w-full cursor-zoom-in rounded-xl bg-muted object-cover transition-opacity hover:opacity-90 ring-1 ring-border/50",
+                                i === 0 && "col-span-2 row-span-2",
+                              )}
+                            />
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 rounded-xl bg-muted p-4 text-sm text-muted-foreground">
+                        <ImageOff className="size-4" /> {t("shops.noPhotos")}
+                      </div>
+                    );
+                  })()}
               </section>
 
               {/* Facts */}
@@ -291,6 +303,20 @@ export function ShopDetailSheet({
               {reasonFor === "reject" ? t("shops.reject") : t("shops.suspend")}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Photo Lightbox Dialog */}
+      <Dialog open={!!previewPhoto} onOpenChange={(o) => !o && setPreviewPhoto(null)}>
+        <DialogContent className="max-w-2xl p-2 bg-background/95 backdrop-blur-md">
+          {previewPhoto && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={previewPhoto}
+              alt="Shop Preview"
+              className="max-h-[80vh] w-full rounded-lg object-contain"
+            />
+          )}
         </DialogContent>
       </Dialog>
     </Sheet>

@@ -11,6 +11,7 @@ import type { AdminMotorbike } from "@/lib/api/types";
 import { formatDate, formatKhr, formatUsd, shortId } from "@/lib/format";
 import { StatusBadge } from "@/components/common/status-badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -25,6 +26,7 @@ export function MotorbikeDetailSheet({
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [zoomPhoto, setZoomPhoto] = useState<string | null>(null);
 
   // Fetch all photos of the motorbike from the backend
   const photosQuery = useQuery({
@@ -88,7 +90,8 @@ export function MotorbikeDetailSheet({
                     <img
                       src={currentPhoto}
                       alt={motorbike.model}
-                      className="h-60 w-full object-cover transition-all hover:scale-105"
+                      onClick={() => setZoomPhoto(currentPhoto)}
+                      className="h-60 w-full cursor-zoom-in object-cover transition-all hover:scale-105"
                       onError={(e) => {
                         (e.currentTarget as HTMLElement).style.display = "none";
                         (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove("hidden");
@@ -220,6 +223,20 @@ export function MotorbikeDetailSheet({
           </ScrollArea>
         )}
       </SheetContent>
+
+      {/* Lightbox Dialog */}
+      <Dialog open={!!zoomPhoto} onOpenChange={(o) => !o && setZoomPhoto(null)}>
+        <DialogContent className="max-w-2xl p-2 bg-background/95 backdrop-blur-md">
+          {zoomPhoto && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={zoomPhoto}
+              alt="Motorbike Preview"
+              className="max-h-[80vh] w-full rounded-lg object-contain"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </Sheet>
   );
 }

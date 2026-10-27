@@ -1,6 +1,6 @@
 import { api } from "./client";
 import { tokenStore } from "./token-store";
-import type { AdminBooking, AdminDashboard, AdminMotorbike, AdminUser, AuditAction, AuditLogEntry, BlogPost, BlogPostInput, BlogStatus, BookingStatus, MotorbikeStatus, PlatformReport, ReportPeriod, Role, AdminShop, AuthTokens, Page, PaymentStatus, PayoutRow, Photo, Profile, Review, ShopStatus, NotificationPage } from "./types";
+import type { AdminBooking, AdminDashboard, AdminMotorbike, AdminUser, AuditAction, AuditLogEntry, BlogPost, BlogPostInput, BlogStatus, BookingStatus, MotorbikeStatus, PlatformReport, ReportPeriod, Role, AdminShop, AuthTokens, Page, PaymentStatus, PayoutRow, Photo, Profile, QrResponse, Review, ShopStatus, NotificationPage } from "./types";
 
 /* Authentication — open endpoints */
 export const authApi = {
@@ -57,8 +57,17 @@ export const profileApi = {
 export const adminApi = {
   dashboard: () => api<AdminDashboard>("/admin/dashboard"),
 
-  shops: (status: ShopStatus, page = 0, size = 20) =>
-    api<Page<AdminShop>>("/admin/shops", { query: { status, page, size } }),
+  shops: async (status: ShopStatus, page = 0, size = 20) => {
+    const res = await api<Page<AdminShop>>("/admin/shops", { query: { status, page, size } });
+    if (res?.content) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      res.content = res.content.map((s: any) => ({
+        ...s,
+        photoUrl: s.photoUrl || s.primaryPhotoUrl || s.imageUrl || s.logoUrl || undefined,
+      }));
+    }
+    return res;
+  },
   shop: (id: string) => api<AdminShop>(`/admin/shops/${id}`),
   verify: (id: string) => api<AdminShop>(`/admin/shops/${id}/verify`, { method: "POST" }),
   reject: (id: string, reason: string) =>
@@ -73,15 +82,26 @@ export const adminApi = {
     api<Page<PayoutRow>>("/admin/payouts", { query: { status, page, size } }),
   retryPayout: (id: string) => api<PayoutRow>(`/admin/payouts/${id}/retry`, { method: "POST" }),
 
-  reviews: (page = 0, size = 20) => api<Page<Review>>("/admin/reviews", { query: { page, size } }),
+  reviews: async (page = 0, size = 20) => {
+    const res = await api<Page<Review>>("/admin/reviews", { query: { page, size } });
+    if (res?.content) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      res.content = res.content.map((r: any) => ({
+        ...r,
+        customerAvatarUrl: r.customerAvatarUrl || r.avatarUrl || r.photoUrl || undefined,
+      }));
+    }
+    return res;
+  },
 };
 
-/* Public — used by the shop detail panel and motorbike detail panel */
+/* Public & shared photo/review endpoints */
 export const publicApi = {
-  shopPhotos: (shopId: string) => api<Photo[]>(`/shops/${shopId}/photos`, { auth: false }),
-  motorbikePhotos: (motorbikeId: string) => api<Photo[]>(`/motorbikes/${motorbikeId}/photos`, { auth: false }),
+  shopPhotos: (shopId: string) => api<Photo[]>(`/shops/${shopId}/photos`),
+  motorbikePhotos: (motorbikeId: string) => api<Photo[]>(`/motorbikes/${motorbikeId}/photos`),
+  bookingPaymentQr: (bookingId: string) => api<QrResponse>(`/bookings/${bookingId}/payment/qr`),
   shopReviews: (shopId: string, page = 0, size = 5) =>
-    api<Page<Review>>(`/shops/${shopId}/reviews`, { auth: false, query: { page, size } }),
+    api<Page<Review>>(`/shops/${shopId}/reviews`, { query: { page, size } }),
 };
 
 /*
@@ -92,9 +112,14 @@ export const opsApi = {
   bookings: async (q: { status?: BookingStatus; q?: string; page?: number; size?: number }) => {
     const res = await api<Page<AdminBooking>>("/admin/bookings", { query: { size: 20, ...q } });
     if (res?.content) {
-      res.content = res.content.map((b) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      res.content = res.content.map((b: any) => ({
         ...b,
-        items: b.items ?? [],
+        photoUrl: b.photoUrl || b.imageUrl || b.primaryPhotoUrl || b.items?.[0]?.photoUrl || undefined,
+        items: (b.items ?? []).map((it: any) => ({
+          ...it,
+          photoUrl: it.photoUrl || it.imageUrl || it.primaryPhotoUrl || undefined,
+        })),
       }));
     }
     return res;
@@ -106,13 +131,21 @@ export const opsApi = {
       return {
         ...raw.booking,
         ...raw,
-        items: raw.items ?? [],
+        photoUrl: raw.booking.photoUrl || raw.photoUrl || raw.imageUrl || raw.items?.[0]?.photoUrl || undefined,
+        items: (raw.items ?? []).map((it: any) => ({
+          ...it,
+          photoUrl: it.photoUrl || it.imageUrl || it.primaryPhotoUrl || undefined,
+        })),
         history: raw.history ?? [],
       };
     }
     return {
       ...raw,
-      items: raw?.items ?? [],
+      photoUrl: raw?.photoUrl || raw?.imageUrl || raw?.items?.[0]?.photoUrl || undefined,
+      items: (raw?.items ?? []).map((it: any) => ({
+        ...it,
+        photoUrl: it.photoUrl || it.imageUrl || it.primaryPhotoUrl || undefined,
+      })),
       history: raw?.history ?? [],
     };
   },
@@ -129,8 +162,17 @@ export const opsApi = {
     return res;
   },
 
-  users: (q: { role?: Role; active?: boolean; q?: string; page?: number; size?: number }) =>
-    api<Page<AdminUser>>("/admin/users", { query: { size: 20, ...q } }),
+  users: async (q: { role?: Role; active?: boolean; q?: string; page?: number; size?: number }) => {
+    const res = await api<Page<AdminUser>>("/admin/users", { query: { size: 20, ...q } });
+    if (res?.content) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      res.content = res.content.map((u: any) => ({
+        ...u,
+        avatarUrl: u.avatarUrl || u.photoUrl || u.imageUrl || u.profileImageUrl || undefined,
+      }));
+    }
+    return res;
+  },
   suspendUser: (id: string, reason: string) =>
     api<AdminUser>(`/admin/users/${id}/suspend`, { method: "POST", body: { reason } }),
   reactivateUser: (id: string) => api<AdminUser>(`/admin/users/${id}/reactivate`, { method: "POST" }),

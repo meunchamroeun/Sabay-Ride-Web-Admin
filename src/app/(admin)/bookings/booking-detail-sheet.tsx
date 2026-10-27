@@ -1,25 +1,77 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { CalendarRange, MapPin, Phone, Store, UserRound } from "lucide-react";
+import { CalendarRange, MapPin, Phone, QrCode, Store, UserRound } from "lucide-react";
 import { Motorbike } from "@/components/common/motorbike-icon";
-import { opsApi } from "@/lib/api/endpoints";
+import { opsApi, publicApi } from "@/lib/api/endpoints";
 import { formatDate, formatKhr, formatUsd, shortId } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ApiPendingOrError } from "@/components/common/api-pending";
 import { StatusBadge } from "@/components/common/status-badge";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 
+function MotorbikeItemPhoto({
+  motorbikeId,
+  photoUrl,
+  model,
+  onZoom,
+}: {
+  motorbikeId?: string;
+  photoUrl?: string;
+  model: string;
+  onZoom: (url: string) => void;
+}) {
+  const [err, setErr] = useState(false);
+  const photos = useQuery({
+    queryKey: ["motorbike-photos", motorbikeId],
+    queryFn: () => publicApi.motorbikePhotos(motorbikeId!),
+    enabled: !photoUrl && !!motorbikeId,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const src = photoUrl || photos.data?.[0]?.imageUrl || photos.data?.[0]?.url;
+
+  if (src && !err) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={src}
+        alt={model}
+        onError={() => setErr(true)}
+        onClick={() => onZoom(src)}
+        className="size-11 shrink-0 cursor-zoom-in rounded-lg object-cover ring-1 ring-border/50 bg-muted hover:opacity-90 transition-opacity"
+        loading="lazy"
+      />
+    );
+  }
+
+  return (
+    <div className="grid size-11 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground">
+      <Motorbike className="size-5" />
+    </div>
+  );
+}
+
 /** Booking detail: items, the money split (SRS §9) and the status history (FR-50). */
 export function BookingDetailSheet({ bookingId, onOpenChange }: { bookingId: string | null; onOpenChange: (o: boolean) => void }) {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
+  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
+
   const q = useQuery({ queryKey: ["admin-booking", bookingId], queryFn: () => opsApi.booking(bookingId!), enabled: !!bookingId });
   const b = q.data;
+
+  const qr = useQuery({
+    queryKey: ["booking-qr", bookingId],
+    queryFn: () => publicApi.bookingPaymentQr(bookingId!),
+    enabled: !!bookingId && b?.paymentOption === "PAY_NOW",
+  });
 
   return (
     <Sheet open={!!bookingId} onOpenChange={onOpenChange}>
@@ -77,9 +129,12 @@ export function BookingDetailSheet({ bookingId, onOpenChange }: { bookingId: str
                   {b.items && b.items.length > 0 ? (
                     b.items.map((it) => (
                       <li key={it.motorbikeId || it.plateNumber || it.model} className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
-                        <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground">
-                          <Motorbike className="size-4" />
-                        </div>
+                        <MotorbikeItemPhoto
+                          motorbikeId={it.motorbikeId}
+                          photoUrl={it.photoUrl || it.imageUrl}
+                          model={it.model}
+                          onZoom={setPreviewPhoto}
+                        />
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-medium">{it.model}</p>
                           <p className="text-xs text-muted-foreground">
@@ -91,9 +146,12 @@ export function BookingDetailSheet({ bookingId, onOpenChange }: { bookingId: str
                     ))
                   ) : (
                     <li className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
-                      <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground">
-                        <Motorbike className="size-4" />
-                      </div>
+                      <MotorbikeItemPhoto
+                        motorbikeId={b.items?.[0]?.motorbikeId}
+                        photoUrl={b.photoUrl || b.imageUrl}
+                        model={b.bookedModel || "—"}
+                        onZoom={setPreviewPhoto}
+                      />
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-medium">{b.bookedModel || "—"}</p>
                       </div>
@@ -118,6 +176,36 @@ export function BookingDetailSheet({ bookingId, onOpenChange }: { bookingId: str
                   <span className="text-muted-foreground">{t("bookings.payoutStatus")}</span>
                   <StatusBadge status={b.payoutStatus} ns="payouts" />
                 </div>
+
+                {qr.data?.qrImageBase64 && (
+                  <div className="mt-4 flex flex-col items-center justify-center rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
+                    <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-primary">
+                      <QrCode className="size-4" /> KHQR Payment Code
+                    </p>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={
+                        qr.data.qrImageBase64.startsWith("data:")
+                          ? qr.data.qrImageBase64
+                          : `data:image/png;base64,${qr.data.qrImageBase64}`
+                      }
+                      alt="KHQR"
+                      onClick={() =>
+                        setPreviewPhoto(
+                          qr.data!.qrImageBase64!.startsWith("data:")
+                            ? qr.data!.qrImageBase64!
+                            : `data:image/png;base64,${qr.data!.qrImageBase64}`
+                        )
+                      }
+                      className="size-44 cursor-zoom-in rounded-lg bg-white p-2 shadow-xs ring-1 ring-border/50 transition-opacity hover:opacity-95"
+                    />
+                    {qr.data.transactionRef && (
+                      <p className="mt-2 font-mono text-[11px] text-muted-foreground">
+                        Ref: {qr.data.transactionRef}
+                      </p>
+                    )}
+                  </div>
+                )}
               </section>
 
               {b.history && b.history.length > 0 && (
@@ -150,6 +238,20 @@ export function BookingDetailSheet({ bookingId, onOpenChange }: { bookingId: str
           )}
         </ScrollArea>
       </SheetContent>
+
+      {/* Photo Lightbox Dialog */}
+      <Dialog open={!!previewPhoto} onOpenChange={(o) => !o && setPreviewPhoto(null)}>
+        <DialogContent className="max-w-2xl p-2 bg-background/95 backdrop-blur-md">
+          {previewPhoto && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={previewPhoto}
+              alt="Preview"
+              className="max-h-[80vh] w-full rounded-lg object-contain"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </Sheet>
   );
 }

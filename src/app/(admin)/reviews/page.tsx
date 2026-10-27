@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/common/page-header";
 import { Pager } from "@/components/common/pager";
 import { EmptyState, ErrorState } from "@/components/common/states";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ReviewDetailSheet, Stars } from "./review-detail-sheet";
@@ -67,6 +67,9 @@ export default function ReviewsPage() {
                 >
                   <div className="flex items-start gap-3">
                     <Avatar className="size-10 shrink-0">
+                      {(r.customerAvatarUrl || r.avatarUrl || r.photoUrl) && (
+                        <AvatarImage src={r.customerAvatarUrl || r.avatarUrl || r.photoUrl} alt={r.customerName} className="object-cover" />
+                      )}
                       <AvatarFallback className="bg-accent text-xs text-accent-foreground">{initials(r.customerName)}</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1">

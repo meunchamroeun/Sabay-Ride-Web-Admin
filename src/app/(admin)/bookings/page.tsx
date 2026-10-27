@@ -7,9 +7,9 @@ import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { RotateCw, Search, Truck } from "lucide-react";
 import { Motorbike } from "@/components/common/motorbike-icon";
-import { opsApi } from "@/lib/api/endpoints";
+import { opsApi, publicApi } from "@/lib/api/endpoints";
 import { BOOKING_STATUSES, type BookingStatus } from "@/lib/api/types";
-import { formatDate, formatKhr, formatUsd, shortId } from "@/lib/format";
+import { formatDate, formatKhr, formatUsd, initials, shortId } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useDebounced } from "@/hooks/use-debounced";
 import { ApiPendingOrError } from "@/components/common/api-pending";
@@ -18,6 +18,7 @@ import { Pager } from "@/components/common/pager";
 import { EmptyState } from "@/components/common/states";
 import { StatusBadge } from "@/components/common/status-badge";
 import { BookingDetailSheet } from "./booking-detail-sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,37 @@ import { WhenApiReady } from "@/components/common/coming-soon";
 
 const PAGE_SIZE = 20;
 type Filter = BookingStatus | "ALL";
+
+function BookingMotorbikeThumbnail({ motorbikeId, photoUrl }: { motorbikeId?: string; photoUrl?: string }) {
+  const [err, setErr] = useState(false);
+  const photos = useQuery({
+    queryKey: ["motorbike-photos", motorbikeId],
+    queryFn: () => publicApi.motorbikePhotos(motorbikeId!),
+    enabled: !photoUrl && !!motorbikeId,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const src = photoUrl || photos.data?.[0]?.imageUrl || photos.data?.[0]?.url;
+
+  if (src && !err) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={src}
+        alt=""
+        onError={() => setErr(true)}
+        className="size-10 shrink-0 rounded-lg object-cover ring-1 ring-border/50 bg-muted"
+        loading="lazy"
+      />
+    );
+  }
+
+  return (
+    <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground">
+      <Motorbike className="size-5" />
+    </div>
+  );
+}
 
 export default function BookingsPage() {
   return (
@@ -147,15 +179,32 @@ function BookingsScreen() {
                     className="cursor-pointer border-b transition-colors hover:bg-muted/50"
                   >
                     <TableCell className="pl-4">
-                      <p className="font-mono text-xs font-medium">#{shortId(b.id)}</p>
-                      <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Motorbike className="size-3" />
-                        {b.bookedModel || b.items?.[0]?.model || "—"}
-                        {Boolean(b.items && b.items.length > 1) && ` +${b.items.length - 1}`}
-                        {b.pickupMethod === "DELIVERY" && <Truck className="ml-1 size-3" />}
-                      </p>
+                      <div className="flex items-center gap-3">
+                        <BookingMotorbikeThumbnail
+                          motorbikeId={b.items?.[0]?.motorbikeId}
+                          photoUrl={b.photoUrl || b.imageUrl || b.items?.[0]?.photoUrl}
+                        />
+                        <div className="min-w-0">
+                          <p className="font-mono text-xs font-medium">#{shortId(b.id)}</p>
+                          <p className="flex items-center gap-1 text-xs text-muted-foreground truncate">
+                            {b.bookedModel || b.items?.[0]?.model || "—"}
+                            {Boolean(b.items && b.items.length > 1) && ` +${b.items.length - 1}`}
+                            {b.pickupMethod === "DELIVERY" && <Truck className="ml-1 size-3" />}
+                          </p>
+                        </div>
+                      </div>
                     </TableCell>
-                    <TableCell className="max-w-40 truncate">{b.customerName}</TableCell>
+                    <TableCell className="max-w-40 truncate">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="size-6 shrink-0">
+                          {b.customerAvatarUrl && <AvatarImage src={b.customerAvatarUrl} className="object-cover" />}
+                          <AvatarFallback className="text-[10px] bg-accent text-accent-foreground">
+                            {initials(b.customerName)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="truncate">{b.customerName}</span>
+                      </div>
+                    </TableCell>
                     <TableCell className="max-w-44 truncate text-muted-foreground">{b.shopName}</TableCell>
                     <TableCell className="text-xs whitespace-nowrap text-muted-foreground">
                       {formatDate(b.startDate, lng)} → {formatDate(b.endDate, lng)}

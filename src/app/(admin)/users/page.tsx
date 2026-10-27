@@ -17,7 +17,7 @@ import { ApiPendingOrError } from "@/components/common/api-pending";
 import { PageHeader } from "@/components/common/page-header";
 import { Pager } from "@/components/common/pager";
 import { EmptyState } from "@/components/common/states";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -197,6 +197,13 @@ function UsersScreen() {
                       <TableCell className="pl-4">
                         <div className="flex items-center gap-3">
                           <Avatar className="size-9">
+                            {(u.avatarUrl || u.photoUrl || u.imageUrl || u.profileImageUrl) && (
+                              <AvatarImage
+                                src={u.avatarUrl || u.photoUrl || u.imageUrl || u.profileImageUrl}
+                                alt={u.fullName}
+                                className="object-cover"
+                              />
+                            )}
                             <AvatarFallback className={cn("text-xs", isAdmin ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground")}>
                               {initials(u.fullName)}
                             </AvatarFallback>

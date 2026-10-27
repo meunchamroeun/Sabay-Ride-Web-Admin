@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Check, RotateCw, Search, Store } from "lucide-react";
-import { adminApi } from "@/lib/api/endpoints";
+import { adminApi, publicApi } from "@/lib/api/endpoints";
 import type { ShopStatus } from "@/lib/api/types";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,37 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const STATUSES: ShopStatus[] = ["PENDING", "VERIFIED", "SUSPENDED", "REJECTED"];
 const PAGE_SIZE = 20;
+
+function ShopThumbnail({ shopId, name, photoUrl }: { shopId: string; name: string; photoUrl?: string }) {
+  const [imgError, setImgError] = useState(false);
+  const photos = useQuery({
+    queryKey: ["shop-photos", shopId],
+    queryFn: () => publicApi.shopPhotos(shopId),
+    enabled: !photoUrl && !!shopId,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const src = photoUrl || photos.data?.[0]?.imageUrl || photos.data?.[0]?.url;
+
+  if (src && !imgError) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={src}
+        alt={name}
+        onError={() => setImgError(true)}
+        className="size-9 shrink-0 rounded-lg object-cover ring-1 ring-border/50 bg-muted"
+        loading="lazy"
+      />
+    );
+  }
+
+  return (
+    <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground">
+      <Store className="size-4" />
+    </div>
+  );
+}
 
 export default function ShopsPageRoute() {
   // useSearchParams needs a Suspense boundary for the static build.
@@ -139,9 +170,11 @@ function ShopsPage() {
                   >
                     <TableCell className="pl-4">
                       <div className="flex items-center gap-3">
-                        <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground">
-                          <Store className="size-4" />
-                        </div>
+                        <ShopThumbnail
+                          shopId={s.id}
+                          name={s.name}
+                          photoUrl={s.photoUrl || s.primaryPhotoUrl || s.imageUrl || s.logoUrl}
+                        />
                         <div className="min-w-0">
                           <p className="truncate font-medium">{s.name}</p>
                           <p className="truncate text-xs text-muted-foreground">

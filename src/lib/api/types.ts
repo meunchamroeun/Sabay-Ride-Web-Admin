@@ -34,6 +34,8 @@ export interface Profile {
   preferredLanguage?: "en" | "km";
   roles: Role[];
   telegramLinked: boolean;
+  avatarUrl?: string;
+  photoUrl?: string;
   createdAt: string;
 }
 
@@ -62,6 +64,10 @@ export interface AdminShop {
   payoutSharePercent?: Money;
   visibleInSearch: boolean;
   cancellationCount: number;
+  photoUrl?: string;
+  primaryPhotoUrl?: string;
+  logoUrl?: string;
+  imageUrl?: string;
   createdAt: string;
 }
 
@@ -84,6 +90,9 @@ export interface Review {
   shopId: string;
   shopName: string;
   customerName: string;
+  customerAvatarUrl?: string;
+  avatarUrl?: string;
+  photoUrl?: string;
   rating: number;
   comment?: string;
   createdAt: string;
@@ -155,6 +164,8 @@ export interface BookingItem {
   pricePerDay: Money;
   lineTotal: Money;
   swappedFrom?: string;
+  photoUrl?: string;
+  imageUrl?: string;
 }
 
 export interface BookingHistoryEntry {
@@ -174,6 +185,9 @@ export interface AdminBooking {
   endDate: string;
   rentalDays: number;
   bookedModel?: string;
+  photoUrl?: string;
+  imageUrl?: string;
+  customerAvatarUrl?: string;
   status: BookingStatus;
   paymentOption: "PAY_NOW" | "PAY_AT_SHOP";
   pickupMethod: "SELF_PICKUP" | "DELIVERY";
@@ -229,8 +243,18 @@ export interface AdminUser {
   active: boolean;
   suspensionReason?: string;
   phoneVerified: boolean;
+  avatarUrl?: string;
+  photoUrl?: string;
+  imageUrl?: string;
+  profileImageUrl?: string;
   createdAt: string;
   lastLoginAt?: string;
+}
+
+export interface QrResponse {
+  transactionRef?: string;
+  qrImageBase64?: string;
+  expiresAt?: string;
 }
 
 export type AuditAction = "CREATE" | "UPDATE" | "DELETE" | "LOGIN" | "VERIFY" | "PAYOUT";

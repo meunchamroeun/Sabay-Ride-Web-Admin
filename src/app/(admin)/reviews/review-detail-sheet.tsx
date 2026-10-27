@@ -6,7 +6,7 @@ import { CalendarClock, Hash, MessageSquareReply, Store, UserRound } from "lucid
 import type { Review } from "@/lib/api/types";
 import { formatDate, initials, shortId } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
@@ -23,6 +23,9 @@ export function ReviewDetailSheet({ review, onClose }: { review: Review | null; 
           <SheetDescription>{t("reviews.detail")}</SheetDescription>
           <SheetTitle className="flex items-center gap-3 font-heading text-xl">
             <Avatar className="size-11">
+              {(r?.customerAvatarUrl || r?.avatarUrl || r?.photoUrl) && (
+                <AvatarImage src={r.customerAvatarUrl || r.avatarUrl || r.photoUrl} alt={r.customerName} className="object-cover" />
+              )}
               <AvatarFallback className="bg-accent text-sm text-accent-foreground">{initials(r?.customerName)}</AvatarFallback>
             </Avatar>
             <span className="min-w-0 break-words">{r?.customerName}</span>

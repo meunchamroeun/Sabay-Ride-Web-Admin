@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { CheckCircle2, RotateCw } from "lucide-react";
+import { CheckCircle2, RotateCw, Store } from "lucide-react";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/client";
 import { adminApi } from "@/lib/api/endpoints";
@@ -137,7 +137,14 @@ function PayoutsScreen() {
                     onClick={() => setSelectedPayout(p)}
                     className="cursor-pointer border-b transition-colors hover:bg-muted/50"
                   >
-                    <TableCell className="pl-4 font-medium">{p.shopName}</TableCell>
+                    <TableCell className="pl-4 font-medium">
+                      <div className="flex items-center gap-2">
+                        <div className="grid size-7 shrink-0 place-items-center rounded-md bg-accent text-accent-foreground">
+                          <Store className="size-3.5" />
+                        </div>
+                        <span className="truncate">{p.shopName}</span>
+                      </div>
+                    </TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">#{shortId(p.bookingId)}</TableCell>
                     <TableCell className="text-right">
                       <span className="block font-medium tabular">{formatUsd(p.amount, lng)}</span>
