@@ -241,7 +241,12 @@
     },
     "retried": "Payout retried",
     "alreadyPaid": "This payout has already been paid",
-    "healthy": "No failed payouts — everything is flowing"
+    "healthy": "No failed payouts — everything is flowing",
+    "detail": "Payout detail",
+    "breakdown": "Payout breakdown",
+    "linkedBooking": "Linked booking",
+    "viewBooking": "View booking",
+    "retryPayout": "Retry payout"
   },
   "reviews": {
     "title": "Reviews",
@@ -351,7 +356,12 @@
       "price": "Price",
       "added": "Added"
     },
-    "unit": "Unit"
+    "unit": "Unit",
+    "detail": "Motorbike detail",
+    "specifications": "Specifications",
+    "engine": "Engine displacement",
+    "pricing": "Daily rate",
+    "noPhoto": "No photo available"
   },
   "users": {
     "title": "Users",
@@ -377,7 +387,12 @@
     "suspended": "{{name}} suspended",
     "reactivated": "{{name}} reactivated",
     "suspendTitle": "Suspend {{name}}",
-    "suspendHint": "The account can no longer sign in until it is reactivated. The reason is recorded in the audit log."
+    "suspendHint": "The account can no longer sign in until it is reactivated. The reason is recorded in the audit log.",
+    "detail": "User detail",
+    "accountStatus": "Account status",
+    "rolesTitle": "Assigned roles",
+    "joined": "Member since",
+    "lastSeen": "Last active"
   },
   "reports": {
     "title": "Reports",
@@ -423,7 +438,10 @@
       "user": "User",
       "description": "Description",
       "ip": "IP address"
-    }
+    },
+    "detail": "Audit log detail",
+    "eventDetails": "Event details",
+    "targetEntity": "Target entity"
   },
   "blog": {
     "subtitle": "Travel articles for customers, written in Markdown. Only published posts appear in the app.",

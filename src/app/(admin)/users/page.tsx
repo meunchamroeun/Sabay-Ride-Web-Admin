@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
@@ -30,6 +31,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { RequiredMark } from "@/components/common/required-mark";
 import { WhenApiReady } from "@/components/common/coming-soon";
+import { UserDetailSheet } from "./user-detail-sheet";
 
 const PAGE_SIZE = 20;
 const ROLES: Role[] = ["CUSTOMER", "SHOP_OWNER", "SHOP_STAFF", "ADMIN"];
@@ -38,7 +40,9 @@ type ActiveFilter = "all" | "active" | "suspended";
 export default function UsersPage() {
   return (
     <WhenApiReady feature="users">
-      <UsersScreen />
+      <Suspense fallback={null}>
+        <UsersScreen />
+      </Suspense>
     </WhenApiReady>
   );
 }
@@ -53,6 +57,10 @@ function UsersScreen() {
   const search = useDebounced(q);
   const [suspending, setSuspending] = useState<AdminUser | null>(null);
   const [reason, setReason] = useState("");
+
+  const openParam = useSearchParams().get("open");
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+  const [dismissed, setDismissed] = useState<string | null>(null);
 
   const query = useQuery({
     queryKey: ["admin-users", role, active, search, page, PAGE_SIZE],
@@ -85,6 +93,17 @@ function UsersScreen() {
     },
     onError,
   });
+
+  const activeUser =
+    selectedUser ??
+    (openParam && openParam !== dismissed
+      ? query.data?.content.find((u) => u.id === openParam) ?? null
+      : null);
+
+  const closeDetail = () => {
+    setSelectedUser(null);
+    if (openParam) setDismissed(openParam);
+  };
 
   return (
     <>
@@ -172,7 +191,8 @@ function UsersScreen() {
                       initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.02 }}
-                      className="border-b transition-colors hover:bg-muted/50"
+                      onClick={() => setSelectedUser(u)}
+                      className="cursor-pointer border-b transition-colors hover:bg-muted/50"
                     >
                       <TableCell className="pl-4">
                         <div className="flex items-center gap-3">
@@ -217,7 +237,7 @@ function UsersScreen() {
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">{formatDate(u.createdAt, i18n.language)}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{formatDate(u.lastLoginAt, i18n.language, true)}</TableCell>
-                      <TableCell className="pr-4 text-right">
+                      <TableCell className="pr-4 text-right" onClick={(e) => e.stopPropagation()}>
                         {isAdmin ? null : u.active ? (
                           <Button size="sm" variant="outline" onClick={() => setSuspending(u)}>
                             <Ban /> {t("shops.suspend")}
@@ -273,6 +293,14 @@ function UsersScreen() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <UserDetailSheet
+        user={activeUser}
+        onClose={closeDetail}
+        onSuspend={setSuspending}
+        onReactivate={(id) => reactivate.mutate(id)}
+        isReactivating={reactivate.isPending}
+      />
     </>
   );
 }

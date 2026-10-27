@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Info, Search } from "lucide-react";
 import { Motorbike } from "@/components/common/motorbike-icon";
 import { opsApi } from "@/lib/api/endpoints";
-import type { MotorbikeStatus } from "@/lib/api/types";
+import type { AdminMotorbike, MotorbikeStatus } from "@/lib/api/types";
 import { formatDate, formatUsd } from "@/lib/format";
 import { useDebounced } from "@/hooks/use-debounced";
 import { ApiPendingOrError } from "@/components/common/api-pending";
@@ -21,6 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WhenApiReady } from "@/components/common/coming-soon";
+import { MotorbikeDetailSheet } from "./motorbike-detail-sheet";
 
 const PAGE_SIZE = 20;
 const STATUSES: MotorbikeStatus[] = ["ACTIVE", "MAINTENANCE", "INACTIVE"];
@@ -29,7 +31,9 @@ type Filter = MotorbikeStatus | "ALL";
 export default function MotorbikesPage() {
   return (
     <WhenApiReady feature="motorbikes">
-      <MotorbikesScreen />
+      <Suspense fallback={null}>
+        <MotorbikesScreen />
+      </Suspense>
     </WhenApiReady>
   );
 }
@@ -43,10 +47,25 @@ function MotorbikesScreen() {
   const search = useDebounced(q);
   const status = filter === "ALL" ? undefined : filter;
 
+  const openParam = useSearchParams().get("open");
+  const [selected, setSelected] = useState<AdminMotorbike | null>(null);
+  const [dismissed, setDismissed] = useState<string | null>(null);
+
   const query = useQuery({
     queryKey: ["admin-motorbikes", status ?? "ALL", search, page, PAGE_SIZE],
     queryFn: () => opsApi.motorbikes({ status, q: search || undefined, page, size: PAGE_SIZE }),
   });
+
+  const activeMotorbike =
+    selected ??
+    (openParam && openParam !== dismissed
+      ? query.data?.content.find((m) => m.id === openParam) ?? null
+      : null);
+
+  const closeModal = () => {
+    setSelected(null);
+    if (openParam) setDismissed(openParam);
+  };
 
   return (
     <>
@@ -123,7 +142,8 @@ function MotorbikesScreen() {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.02 }}
-                    className="border-b transition-colors hover:bg-muted/50"
+                    onClick={() => setSelected(m)}
+                    className="cursor-pointer border-b transition-colors hover:bg-muted/50"
                   >
                     <TableCell className="pl-4">
                       <div className="flex items-center gap-3">
@@ -162,6 +182,8 @@ function MotorbikesScreen() {
           <Pager page={page} size={PAGE_SIZE} total={query.data.totalElements} onChange={setPage} />
         )}
       </Card>
+
+      <MotorbikeDetailSheet motorbike={activeMotorbike} onClose={closeModal} />
     </>
   );
 }

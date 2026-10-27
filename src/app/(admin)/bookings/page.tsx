@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
@@ -29,7 +30,9 @@ type Filter = BookingStatus | "ALL";
 export default function BookingsPage() {
   return (
     <WhenApiReady feature="bookings">
-      <BookingsScreen />
+      <Suspense fallback={null}>
+        <BookingsScreen />
+      </Suspense>
     </WhenApiReady>
   );
 }
@@ -41,7 +44,14 @@ function BookingsScreen() {
   const [page, setPage] = useState(0);
   const [q, setQ] = useState("");
   const search = useDebounced(q);
-  const [openId, setOpenId] = useState<string | null>(null);
+  const openParam = useSearchParams().get("open");
+  const [selected, setSelected] = useState<string | null>(null);
+  const [dismissed, setDismissed] = useState<string | null>(null);
+  const openId = selected ?? (openParam && openParam !== dismissed ? openParam : null);
+  const setOpenId = (id: string | null) => {
+    setSelected(id);
+    if (!id) setDismissed(openParam);
+  };
   const status = filter === "ALL" ? undefined : filter;
 
   const query = useQuery({

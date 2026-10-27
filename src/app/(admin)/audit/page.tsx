@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { BadgeCheck, LogIn, Pencil, Plus, Search, Trash2, Wallet } from "lucide-react";
 import { opsApi } from "@/lib/api/endpoints";
-import { AUDIT_ACTIONS, type AuditAction } from "@/lib/api/types";
+import { AUDIT_ACTIONS, type AuditAction, type AuditLogEntry } from "@/lib/api/types";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useDebounced } from "@/hooks/use-debounced";
@@ -20,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WhenApiReady } from "@/components/common/coming-soon";
+import { AuditDetailSheet } from "./audit-detail-sheet";
 
 const PAGE_SIZE = 25;
 
@@ -35,7 +37,9 @@ const ACTION_STYLE: Record<AuditAction, { icon: React.ElementType; tone: string 
 export default function AuditPage() {
   return (
     <WhenApiReady feature="audit">
-      <AuditScreen />
+      <Suspense fallback={null}>
+        <AuditScreen />
+      </Suspense>
     </WhenApiReady>
   );
 }
@@ -47,10 +51,25 @@ function AuditScreen() {
   const [q, setQ] = useState("");
   const search = useDebounced(q);
 
+  const openParam = useSearchParams().get("open");
+  const [selectedAudit, setSelectedAudit] = useState<AuditLogEntry | null>(null);
+  const [dismissed, setDismissed] = useState<string | null>(null);
+
   const query = useQuery({
     queryKey: ["admin-audit", action, search, page, PAGE_SIZE],
     queryFn: () => opsApi.auditLogs({ action: action === "ALL" ? undefined : action, q: search || undefined, page, size: PAGE_SIZE }),
   });
+
+  const activeAudit =
+    selectedAudit ??
+    (openParam && openParam !== dismissed
+      ? query.data?.content.find((a) => a.id === openParam) ?? null
+      : null);
+
+  const closeDetail = () => {
+    setSelectedAudit(null);
+    if (openParam) setDismissed(openParam);
+  };
 
   return (
     <>
@@ -122,7 +141,8 @@ function AuditScreen() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: i * 0.015 }}
-                      className="border-b transition-colors hover:bg-muted/50"
+                      onClick={() => setSelectedAudit(a)}
+                      className="cursor-pointer border-b transition-colors hover:bg-muted/50"
                     >
                       <TableCell className="pl-4 text-xs whitespace-nowrap text-muted-foreground">{formatDate(a.createdAt, i18n.language, true)}</TableCell>
                       <TableCell>
@@ -151,6 +171,8 @@ function AuditScreen() {
           <Pager page={page} size={PAGE_SIZE} total={query.data.totalElements} onChange={setPage} />
         )}
       </Card>
+
+      <AuditDetailSheet entry={activeAudit} onClose={closeDetail} />
     </>
   );
 }

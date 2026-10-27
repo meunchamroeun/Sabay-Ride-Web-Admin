@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
@@ -8,7 +9,7 @@ import { CheckCircle2, RotateCw } from "lucide-react";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/client";
 import { adminApi } from "@/lib/api/endpoints";
-import type { PaymentStatus } from "@/lib/api/types";
+import type { PaymentStatus, PayoutRow } from "@/lib/api/types";
 import { formatDate, formatKhr, formatUsd, shortId } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/common/page-header";
@@ -21,16 +22,29 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { PayoutDetailSheet } from "./payout-detail-sheet";
 
 const FILTERS: (PaymentStatus | "ALL")[] = ["FAILED", "PENDING", "PAID", "ALL"];
 const PAGE_SIZE = 20;
 
 export default function PayoutsPage() {
+  return (
+    <Suspense fallback={null}>
+      <PayoutsScreen />
+    </Suspense>
+  );
+}
+
+function PayoutsScreen() {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
   const [filter, setFilter] = useState<PaymentStatus | "ALL">("FAILED");
   const [page, setPage] = useState(0);
   const status = filter === "ALL" ? undefined : filter;
+
+  const openParam = useSearchParams().get("open");
+  const [selectedPayout, setSelectedPayout] = useState<PayoutRow | null>(null);
+  const [dismissed, setDismissed] = useState<string | null>(null);
 
   const query = useQuery({
     queryKey: ["payouts", status ?? "ALL", page, PAGE_SIZE],
@@ -45,6 +59,17 @@ export default function PayoutsPage() {
     },
     onError: (e) => toast.error(e instanceof ApiError ? `${e.message} (${e.code})` : String(e)),
   });
+
+  const activePayout =
+    selectedPayout ??
+    (openParam && openParam !== dismissed
+      ? query.data?.content.find((p) => p.paymentId === openParam) ?? null
+      : null);
+
+  const closeDetail = () => {
+    setSelectedPayout(null);
+    if (openParam) setDismissed(openParam);
+  };
 
   return (
     <>
@@ -109,7 +134,8 @@ export default function PayoutsPage() {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.025 }}
-                    className="border-b transition-colors hover:bg-muted/50"
+                    onClick={() => setSelectedPayout(p)}
+                    className="cursor-pointer border-b transition-colors hover:bg-muted/50"
                   >
                     <TableCell className="pl-4 font-medium">{p.shopName}</TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">#{shortId(p.bookingId)}</TableCell>
@@ -138,7 +164,7 @@ export default function PayoutsPage() {
                     <TableCell className="text-xs whitespace-nowrap text-muted-foreground">
                       {formatDate(p.createdAt, lng, true)}
                     </TableCell>
-                    <TableCell className="pr-4 text-right">
+                    <TableCell className="pr-4 text-right" onClick={(e) => e.stopPropagation()}>
                       {p.status === "FAILED" && (
                         <Button
                           variant="ghost"
@@ -171,6 +197,13 @@ export default function PayoutsPage() {
           <Pager page={page} size={PAGE_SIZE} total={query.data.totalElements} onChange={setPage} />
         )}
       </Card>
+
+      <PayoutDetailSheet
+        payout={activePayout}
+        onClose={closeDetail}
+        onRetry={(id) => retry.mutate(id)}
+        isRetrying={retry.isPending}
+      />
     </>
   );
 }
