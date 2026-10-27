@@ -23,7 +23,11 @@ export default function ReviewsPage() {
   const { t, i18n } = useTranslation();
   const [page, setPage] = useState(0);
   const [open, setOpen] = useState<Review | null>(null);
-  const query = useQuery({ queryKey: ["reviews", page, PAGE_SIZE], queryFn: () => adminApi.reviews(page, PAGE_SIZE) });
+  const query = useQuery({
+    queryKey: ["reviews", page, PAGE_SIZE],
+    queryFn: () => adminApi.reviews(page, PAGE_SIZE),
+    refetchInterval: 3_000,
+  });
 
   const list = query.data?.content ?? [];
   const avg = list.length ? list.reduce((a, r) => a + r.rating, 0) / list.length : 0;

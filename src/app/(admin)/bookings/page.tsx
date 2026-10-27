@@ -91,7 +91,7 @@ function BookingsScreen() {
   const query = useQuery({
     queryKey: ["admin-bookings", status ?? "ALL", search, page, PAGE_SIZE],
     queryFn: () => opsApi.bookings({ status, q: search || undefined, page, size: PAGE_SIZE }),
-    refetchInterval: 8_000,
+    refetchInterval: 3_000,
   });
 
   return (

@@ -84,7 +84,7 @@ function ShopsPage() {
   const query = useQuery({
     queryKey: ["shops", status, page, PAGE_SIZE],
     queryFn: () => adminApi.shops(status, page, PAGE_SIZE),
-    refetchInterval: 8_000,
+    refetchInterval: 3_000,
   });
 
   const rows = useMemo(() => {

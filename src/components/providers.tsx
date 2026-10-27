@@ -16,7 +16,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 5_000,
+            staleTime: 2_000,
             refetchOnWindowFocus: true,
             refetchOnReconnect: true,
             retry: (count, err) => !(err instanceof ApiError && err.status < 500) && count < 2,

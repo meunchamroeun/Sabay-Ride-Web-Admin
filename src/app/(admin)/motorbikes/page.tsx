@@ -54,6 +54,7 @@ function MotorbikesScreen() {
   const query = useQuery({
     queryKey: ["admin-motorbikes", status ?? "ALL", search, page, PAGE_SIZE],
     queryFn: () => opsApi.motorbikes({ status, q: search || undefined, page, size: PAGE_SIZE }),
+    refetchInterval: 3_000,
   });
 
   const activeMotorbike =

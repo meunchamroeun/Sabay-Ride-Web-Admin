@@ -53,7 +53,7 @@ function PayoutsScreen() {
   const query = useQuery({
     queryKey: ["payouts", status ?? "ALL", page, PAGE_SIZE],
     queryFn: () => adminApi.payouts(status, page, PAGE_SIZE),
-    refetchInterval: 8_000,
+    refetchInterval: 3_000,
   });
 
   const retry = useMutation({

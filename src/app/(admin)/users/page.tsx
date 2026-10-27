@@ -72,6 +72,7 @@ function UsersScreen() {
         page,
         size: PAGE_SIZE,
       }),
+    refetchInterval: 3_000,
   });
 
   const onError = (e: unknown) => toast.error(e instanceof ApiError ? `${e.message} (${e.code})` : String(e));

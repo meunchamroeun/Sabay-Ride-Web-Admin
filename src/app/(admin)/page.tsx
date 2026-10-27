@@ -52,9 +52,9 @@ export default function DashboardPage() {
   const lng = i18n.language;
   const { session } = useAuth();
 
-  const dash = useQuery({ queryKey: ["admin-dashboard"], queryFn: adminApi.dashboard, refetchInterval: 8_000 });
-  const queue = useQuery({ queryKey: ["shops", "PENDING", 0, 5], queryFn: () => adminApi.shops("PENDING", 0, 5), refetchInterval: 8_000 });
-  const failed = useQuery({ queryKey: ["payouts", "FAILED", 0, 1], queryFn: () => adminApi.payouts("FAILED", 0, 1), refetchInterval: 8_000 });
+  const dash = useQuery({ queryKey: ["admin-dashboard"], queryFn: adminApi.dashboard, refetchInterval: 3_000 });
+  const queue = useQuery({ queryKey: ["shops", "PENDING", 0, 5], queryFn: () => adminApi.shops("PENDING", 0, 5), refetchInterval: 3_000 });
+  const failed = useQuery({ queryKey: ["payouts", "FAILED", 0, 1], queryFn: () => adminApi.payouts("FAILED", 0, 1), refetchInterval: 3_000 });
 
   const groups = groupDashboard(dash.data);
   const gross = findMetric(groups, "grossBookingValue", "gross");

@@ -55,8 +55,8 @@ export function AppSidebar() {
   const closeDrawer = () => isMobile && setOpenMobile(false);
 
   // Counters that tell the admin where work is waiting.
-  const pending = useQuery({ queryKey: ["shops", "PENDING", 0, 1], queryFn: () => adminApi.shops("PENDING", 0, 1), refetchInterval: 8_000 });
-  const failed = useQuery({ queryKey: ["payouts", "FAILED", 0, 1], queryFn: () => adminApi.payouts("FAILED", 0, 1), refetchInterval: 8_000 });
+  const pending = useQuery({ queryKey: ["shops", "PENDING", 0, 1], queryFn: () => adminApi.shops("PENDING", 0, 1), refetchInterval: 3_000 });
+  const failed = useQuery({ queryKey: ["payouts", "FAILED", 0, 1], queryFn: () => adminApi.payouts("FAILED", 0, 1), refetchInterval: 3_000 });
 
   const groups: Group[] = [
     { key: "top", items: [{ href: "/", key: "dashboard", icon: LayoutGrid }] },
