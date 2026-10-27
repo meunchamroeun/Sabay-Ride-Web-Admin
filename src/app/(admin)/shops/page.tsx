@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { Check, EyeOff, Eye, Search, Store } from "lucide-react";
+import { Check, Search, Store } from "lucide-react";
 import { adminApi } from "@/lib/api/endpoints";
 import type { ShopStatus } from "@/lib/api/types";
 import { formatDate } from "@/lib/format";
@@ -98,7 +98,6 @@ function ShopsPage() {
                   <TableHead className="pl-4">{t("shops.col.shop")}</TableHead>
                   <TableHead>{t("shops.col.status")}</TableHead>
                   <TableHead>{t("shops.col.payout")}</TableHead>
-                  <TableHead>{t("shops.col.visible")}</TableHead>
                   <TableHead className="text-right">{t("shops.col.cancellations")}</TableHead>
                   <TableHead className="pr-4 text-right">{t("shops.col.applied")}</TableHead>
                 </TableRow>
@@ -107,7 +106,7 @@ function ShopsPage() {
                 {query.isLoading &&
                   Array.from({ length: 6 }).map((_, i) => (
                     <TableRow key={i}>
-                      <TableCell colSpan={6} className="px-4">
+                      <TableCell colSpan={5} className="px-4">
                         <Skeleton className="h-9 w-full" />
                       </TableCell>
                     </TableRow>
@@ -145,13 +144,6 @@ function ShopsPage() {
                         </span>
                       ) : (
                         <span className="text-xs text-muted-foreground">{t("common.no")}</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {s.visibleInSearch ? (
-                        <Eye className="size-4 text-emerald-600 dark:text-emerald-300" />
-                      ) : (
-                        <EyeOff className="size-4 text-muted-foreground" />
                       )}
                     </TableCell>
                     <TableCell className="text-right tabular">{s.cancellationCount ?? 0}</TableCell>
