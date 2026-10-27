@@ -84,6 +84,17 @@ const MODELS: [string, string, string, number, number][] = [
   ["Honda CRF 250L", "Honda", "Manual", 250, 25],
 ];
 
+export const MODEL_PHOTOS: Record<string, string> = {
+  "Honda Dream 125": "https://images.unsplash.com/photo-1563074408-c10b8c208bc5?w=900&auto=format&fit=crop",
+  "Honda Click 125i": "https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?w=900&auto=format&fit=crop",
+  "Honda Scoopy": "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=900&auto=format&fit=crop",
+  "Yamaha NMAX 155": "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=900&auto=format&fit=crop",
+  "Honda PCX 160": "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=900&auto=format&fit=crop",
+  "Suzuki Viva 115": "https://images.unsplash.com/photo-1579753089733-3aa94f73cef1?w=900&auto=format&fit=crop",
+  "Honda Wave 110": "https://images.unsplash.com/photo-1748590853322-b99f3fdd3ab0?w=900&auto=format&fit=crop",
+  "Honda CRF 250L": "https://images.unsplash.com/photo-1515777315835-281b94c9589f?w=900&auto=format&fit=crop",
+};
+
 const CUSTOMERS = [
   "Sokha Chan", "Dara Pich", "Emily Carter", "Kimheng Ly", "Lucas Martin", "Sreyneang Kim", "Akira Tanaka",
   "Rithy Sok", "Maria Lopez", "Vannak Heng", "Chloe Nguyen", "Ben Wilson", "Sophea Meas", "Noah Schmidt",
@@ -179,6 +190,7 @@ export function buildOps(shops: OpsShop[], admin: { id: string; name: string }):
         engineCc: cc,
         pricePerDay: money(price + (si % 2)),
         status: r() < 0.82 ? "ACTIVE" : r() < 0.6 ? "MAINTENANCE" : "INACTIVE",
+        photoUrl: MODEL_PHOTOS[model] || "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=900&auto=format&fit=crop",
         createdAt: iso(now - (40 - si * 3) * DAY - k * 3_600_000),
       });
     }

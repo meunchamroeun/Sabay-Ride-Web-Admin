@@ -215,6 +215,8 @@ export interface AdminMotorbike {
   pricePerDay: Money;
   status: MotorbikeStatus;
   photoUrl?: string;
+  primaryPhotoUrl?: string;
+  imageUrl?: string;
   createdAt: string;
 }
 

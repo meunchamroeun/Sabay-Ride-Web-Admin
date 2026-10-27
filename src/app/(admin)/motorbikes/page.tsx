@@ -136,43 +136,64 @@ function MotorbikesScreen() {
                       </TableCell>
                     </TableRow>
                   ))}
-                {query.data?.content.map((m, i) => (
-                  <motion.tr
-                    key={m.id}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.02 }}
-                    onClick={() => setSelected(m)}
-                    className="cursor-pointer border-b transition-colors hover:bg-muted/50"
-                  >
-                    <TableCell className="pl-4">
-                      <div className="flex items-center gap-3">
-                        <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground">
-                          <Motorbike className="size-4" />
+                {query.data?.content.map((m, i) => {
+                  const photo = m.photoUrl || m.primaryPhotoUrl || m.imageUrl;
+                  return (
+                    <motion.tr
+                      key={m.id}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.02 }}
+                      onClick={() => setSelected(m)}
+                      className="cursor-pointer border-b transition-colors hover:bg-muted/50"
+                    >
+                      <TableCell className="pl-4">
+                        <div className="flex items-center gap-3">
+                          {photo ? (
+                            <div className="relative size-12 shrink-0 overflow-hidden rounded-xl border bg-muted shadow-2xs">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={photo}
+                                alt={m.model}
+                                className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLElement).style.display = "none";
+                                  (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove("hidden");
+                                }}
+                              />
+                              <div className="hidden grid size-full place-items-center bg-accent text-accent-foreground">
+                                <Motorbike className="size-5" />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-accent text-accent-foreground">
+                              <Motorbike className="size-5" />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="truncate font-medium">{m.model}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {m.brand} · {t("motorbikes.unit")} {m.unitCode}
+                            </p>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <p className="truncate font-medium">{m.model}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {m.brand} · {t("motorbikes.unit")} {m.unitCode}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">{m.plateNumber}</TableCell>
-                    <TableCell className="max-w-44 truncate text-muted-foreground">{m.shopName}</TableCell>
-                    <TableCell className="text-xs whitespace-nowrap text-muted-foreground">
-                      {m.type} · {m.engineCc}cc
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={m.status} ns="motorbikes" />
-                    </TableCell>
-                    <TableCell className="text-right font-medium tabular">
-                      {formatUsd(m.pricePerDay, lng)}
-                      <span className="text-[11px] font-normal text-muted-foreground"> /{t("bookings.day")}</span>
-                    </TableCell>
-                    <TableCell className="pr-4 text-right text-xs text-muted-foreground">{formatDate(m.createdAt, lng)}</TableCell>
-                  </motion.tr>
-                ))}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs">{m.plateNumber}</TableCell>
+                      <TableCell className="max-w-44 truncate text-muted-foreground">{m.shopName}</TableCell>
+                      <TableCell className="text-xs whitespace-nowrap text-muted-foreground">
+                        {m.type} · {m.engineCc}cc
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={m.status} ns="motorbikes" />
+                      </TableCell>
+                      <TableCell className="text-right font-medium tabular">
+                        {formatUsd(m.pricePerDay, lng)}
+                        <span className="text-[11px] font-normal text-muted-foreground"> /{t("bookings.day")}</span>
+                      </TableCell>
+                      <TableCell className="pr-4 text-right text-xs text-muted-foreground">{formatDate(m.createdAt, lng)}</TableCell>
+                    </motion.tr>
+                  );
+                })}
               </TableBody>
             </Table>
             {query.data?.content.length === 0 && <EmptyState />}

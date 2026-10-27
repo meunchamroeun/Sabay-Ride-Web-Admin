@@ -85,9 +85,10 @@ export const adminApi = {
   reviews: (page = 0, size = 20) => api<Page<Review>>("/admin/reviews", { query: { page, size } }),
 };
 
-/* Public — used by the shop detail panel */
+/* Public — used by the shop detail panel and motorbike detail panel */
 export const publicApi = {
   shopPhotos: (shopId: string) => api<Photo[]>(`/shops/${shopId}/photos`, { auth: false }),
+  motorbikePhotos: (motorbikeId: string) => api<Photo[]>(`/motorbikes/${motorbikeId}/photos`, { auth: false }),
   shopReviews: (shopId: string, page = 0, size = 5) =>
     api<Page<Review>>(`/shops/${shopId}/reviews`, { auth: false, query: { page, size } }),
 };
@@ -125,8 +126,17 @@ export const opsApi = {
     };
   },
 
-  motorbikes: (q: { status?: MotorbikeStatus; q?: string; page?: number; size?: number }) =>
-    api<Page<AdminMotorbike>>("/admin/motorbikes", { query: { size: 20, ...q } }),
+  motorbikes: async (q: { status?: MotorbikeStatus; q?: string; page?: number; size?: number }) => {
+    const res = await api<Page<AdminMotorbike>>("/admin/motorbikes", { query: { size: 20, ...q } });
+    if (res?.content) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      res.content = res.content.map((m: any) => ({
+        ...m,
+        photoUrl: m.photoUrl || m.primaryPhotoUrl || m.imageUrl || undefined,
+      }));
+    }
+    return res;
+  },
 
   users: (q: { role?: Role; active?: boolean; q?: string; page?: number; size?: number }) =>
     api<Page<AdminUser>>("/admin/users", { query: { size: 20, ...q } }),

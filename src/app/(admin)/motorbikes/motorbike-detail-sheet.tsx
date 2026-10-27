@@ -1,9 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { ArrowUpRight, Calendar, DollarSign, Gauge, Hash, ImageOff, Layers, Store } from "lucide-react";
 import { Motorbike } from "@/components/common/motorbike-icon";
+import { publicApi } from "@/lib/api/endpoints";
 import type { AdminMotorbike } from "@/lib/api/types";
 import { formatDate, formatKhr, formatUsd, shortId } from "@/lib/format";
 import { StatusBadge } from "@/components/common/status-badge";
@@ -21,9 +24,41 @@ export function MotorbikeDetailSheet({
 }) {
   const { t, i18n } = useTranslation();
   const lng = i18n.language;
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+
+  // Fetch all photos of the motorbike from the backend
+  const photosQuery = useQuery({
+    queryKey: ["motorbike-photos", motorbike?.id],
+    queryFn: () => publicApi.motorbikePhotos(motorbike!.id),
+    enabled: !!motorbike?.id,
+  });
+
+  const photoList = photosQuery.data ?? [];
+  const primaryFromApi =
+    photoList.find((p) => p.isPrimary || p.primary)?.imageUrl ||
+    photoList.find((p) => p.isPrimary || p.primary)?.url ||
+    photoList[0]?.imageUrl ||
+    photoList[0]?.url;
+
+  const defaultPhoto =
+    motorbike?.photoUrl ||
+    (motorbike as Record<string, unknown> | null)?.primaryPhotoUrl as string ||
+    (motorbike as Record<string, unknown> | null)?.imageUrl as string ||
+    primaryFromApi ||
+    null;
+
+  const currentPhoto = selectedPhoto ?? defaultPhoto;
 
   return (
-    <Sheet open={!!motorbike} onOpenChange={(o) => !o && onClose()}>
+    <Sheet
+      open={!!motorbike}
+      onOpenChange={(o) => {
+        if (!o) {
+          setSelectedPhoto(null);
+          onClose();
+        }
+      }}
+    >
       <SheetContent className="w-full gap-0 p-0 sm:max-w-lg">
         <SheetHeader className="border-b p-5">
           <SheetDescription>{t("motorbikes.detail")}</SheetDescription>
@@ -46,20 +81,49 @@ export function MotorbikeDetailSheet({
           <ScrollArea className="h-[calc(100vh-6.5rem)]">
             <div className="space-y-6 p-5 text-sm">
               {/* Photo or Image banner */}
-              <div className="overflow-hidden rounded-2xl border bg-muted/30">
-                {motorbike.photoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={motorbike.photoUrl}
-                    alt={motorbike.model}
-                    className="h-56 w-full object-cover transition-transform hover:scale-105"
-                  />
-                ) : (
-                  <div className="flex h-44 flex-col items-center justify-center gap-2 text-muted-foreground/60">
+              <div className="space-y-3">
+                <div className="relative overflow-hidden rounded-2xl border bg-muted/40 shadow-xs">
+                  {currentPhoto ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={currentPhoto}
+                      alt={motorbike.model}
+                      className="h-60 w-full object-cover transition-all hover:scale-105"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLElement).style.display = "none";
+                        (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove("hidden");
+                      }}
+                    />
+                  ) : null}
+                  <div className={`${currentPhoto ? "hidden" : "flex"} h-52 flex-col items-center justify-center gap-2 text-muted-foreground/60`}>
                     <div className="grid size-12 place-items-center rounded-2xl bg-muted">
                       <ImageOff className="size-6" />
                     </div>
                     <span className="text-xs">{t("motorbikes.noPhoto")}</span>
+                  </div>
+                </div>
+
+                {/* Photo gallery thumbnails if multiple photos exist */}
+                {photoList.length > 1 && (
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                    {photoList.map((p, idx) => {
+                      const img = p.imageUrl || p.url;
+                      if (!img) return null;
+                      const isSel = currentPhoto === img;
+                      return (
+                        <button
+                          key={p.id || idx}
+                          type="button"
+                          onClick={() => setSelectedPhoto(img)}
+                          className={`relative size-14 shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
+                            isSel ? "border-primary ring-2 ring-primary/20 scale-105" : "border-border hover:border-primary/50 opacity-70 hover:opacity-100"
+                          }`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={img} alt="" className="h-full w-full object-cover" />
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>

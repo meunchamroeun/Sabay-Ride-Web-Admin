@@ -392,6 +392,14 @@ async function handleDemo(method: string, path: string, query: URLSearchParams, 
     }));
   }
 
+  if ((m = path.match(/^\/motorbikes\/([^/]+)\/photos$/)) && method === "GET") {
+    const bike = d.ops.motorbikes.find((b) => b.id === m![1]);
+    const url = bike?.photoUrl || "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=900&auto=format&fit=crop";
+    return [
+      { id: `${m![1]}-p0`, imageUrl: url, isPrimary: true, sortOrder: 0 },
+    ];
+  }
+
   if ((m = path.match(/^\/shops\/([^/]+)\/reviews$/)) && method === "GET") {
     return page(d.reviews.filter((r) => r.shopId === m![1]), query);
   }
