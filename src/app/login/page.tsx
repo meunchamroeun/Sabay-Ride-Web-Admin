@@ -14,7 +14,6 @@ import { AlertCircle, ArrowLeftRight, ArrowRight, CheckCircle2, Eye, EyeOff, Inf
 import { toast } from "sonner";
 import { API_ENV_NAMES, hostOf, type ApiEnv } from "@/config/env";
 import { setApiEnv, useApiEnv } from "@/lib/api/api-env";
-import { DEMO_ACCOUNT, DEMO_ENABLED } from "@/lib/api/demo";
 import { ApiError } from "@/lib/api/client";
 import { authApi } from "@/lib/api/endpoints";
 import { useAuth } from "@/lib/auth/auth-provider";
@@ -35,9 +34,7 @@ const schema = z.object({
     .trim()
     .min(1, "auth.identifierRequired")
     .refine(
-      (v) =>
-        (DEMO_ENABLED && v.toLowerCase() === DEMO_ACCOUNT.identifier) ||
-        (v.includes("@") ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) : /^\+?[\d\s-]{8,16}$/.test(v)),
+      (v) => (v.includes("@") ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) : /^\+?[\d\s-]{8,16}$/.test(v)),
       "auth.identifierInvalid",
     ),
   password: z.string().min(1, "auth.passwordRequired"),

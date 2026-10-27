@@ -1,15 +1,10 @@
 import { api } from "./client";
-import { DEMO_USER, isDemoCredentials, resetDemo } from "./demo";
 import { tokenStore } from "./token-store";
 import type { AdminBooking, AdminDashboard, AdminMotorbike, AdminUser, AuditAction, AuditLogEntry, BlogPost, BlogPostInput, BlogStatus, BookingStatus, MotorbikeStatus, PlatformReport, ReportPeriod, Role, AdminShop, AuthTokens, Page, PaymentStatus, PayoutRow, Photo, Profile, Review, ShopStatus, NotificationPage } from "./types";
 
 /* Authentication — open endpoints */
 export const authApi = {
   async login(identifier: string, password: string) {
-    if (isDemoCredentials(identifier, password)) {
-      tokenStore.setDemo(DEMO_USER);
-      return null;
-    }
     const tokens = await api<AuthTokens>("/auth/login", {
       method: "POST",
       auth: false,
@@ -21,10 +16,6 @@ export const authApi = {
   async logout() {
     const s = tokenStore.get();
     tokenStore.clear();
-    if (s?.demo) {
-      resetDemo();
-      return;
-    }
     if (s) {
       await api<void>("/auth/logout", { method: "POST", auth: false, body: { refreshToken: s.refreshToken } }).catch(
         () => undefined,
@@ -51,7 +42,7 @@ export const profileApi = {
     api<Profile>("/users/me", { method: "PATCH", body }),
   /**
    * Revokes every session and returns a fresh token pair (see API docs), so store it to keep
-   * this device signed in. The demo admin returns nothing and keeps its session.
+   * this device signed in.
    */
   async changePassword(currentPassword: string, newPassword: string) {
     const tokens = await api<AuthTokens | undefined>("/users/me/password", {

@@ -8,8 +8,6 @@ export interface Session {
   /** epoch ms */
   expiresAt: number;
   user: AuthUser;
-  /** Demo admin session: requests are answered by the in-browser mock, never the real API. */
-  demo?: boolean;
 }
 
 type Listener = (s: Session | null) => void;
@@ -35,12 +33,12 @@ export const tokenStore = {
     } catch {
       value = null;
     }
-    // A sample-data session left from before the demo was switched off: sign it out.
-    if (value?.demo && process.env.NEXT_PUBLIC_DEMO_ADMIN !== "true") {
+    // Any legacy mock/demo session left in browser storage is purged immediately.
+    if ((value as { demo?: boolean } | null)?.demo) {
       safeStorage()?.removeItem(KEY);
       value = null;
       cache = { raw: null, value };
-      return value;
+      return null;
     }
     cache = { raw, value };
     return value;
@@ -52,20 +50,6 @@ export const tokenStore = {
       refreshToken: t.refreshToken,
       expiresAt: Date.now() + (t.expiresIn ?? 900) * 1000,
       user: t.user ?? fallbackUser!,
-    };
-    safeStorage()?.setItem(KEY, JSON.stringify(session));
-    listeners.forEach((l) => l(session));
-    return session;
-  },
-
-  /** Starts a demo admin session (no real tokens). */
-  setDemo(user: AuthUser): Session {
-    const session: Session = {
-      accessToken: "demo-admin-token",
-      refreshToken: "demo-admin-token",
-      expiresAt: Date.now() + 365 * 86_400_000,
-      user,
-      demo: true,
     };
     safeStorage()?.setItem(KEY, JSON.stringify(session));
     listeners.forEach((l) => l(session));

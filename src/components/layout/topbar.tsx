@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FlaskConical, LogOut, UserRound } from "lucide-react";
+import { LogOut, UserRound } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { API_ENVIRONMENTS } from "@/config/env";
 import { useApiEnv } from "@/lib/api/api-env";
@@ -40,12 +40,6 @@ export function Topbar() {
       </Link>
       <SidebarTrigger className="-ml-1 hidden md:inline-flex" />
       <Separator orientation="vertical" className="mx-1 hidden h-5! md:block" />
-      {session?.demo ? (
-        <span className="hidden items-center gap-1.5 rounded-full bg-chart-3/15 px-2.5 py-0.5 text-[11px] font-medium text-violet-700 ring-1 ring-chart-3/30 ring-inset sm:inline-flex dark:text-violet-300">
-          <FlaskConical className="size-3" />
-          {t("app.env.demo")}
-        </span>
-      ) : (
       <span
         title={API_ENVIRONMENTS[apiEnv]}
         className={cn(
@@ -61,7 +55,6 @@ export function Topbar() {
         </span>
         {t(`app.env.${apiEnv}`)}
       </span>
-      )}
 
       <div className="ml-auto flex items-center gap-1.5">
         <NotificationBell />

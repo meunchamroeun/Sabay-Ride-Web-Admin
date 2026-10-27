@@ -1,6 +1,5 @@
 import { config } from "@/config/env";
 import { getApiEnv } from "./api-env";
-import { demoRequest } from "./demo";
 import { tokenStore, type Session } from "./token-store";
 import type { ApiErrorBody, AuthTokens } from "./types";
 
@@ -99,16 +98,6 @@ export interface RequestOptions {
 
 export async function api<T>(path: string, opts: RequestOptions = {}): Promise<T> {
   const { method = "GET", body, query, auth = true, signal } = opts;
-
-  // Demo admin: answer from the in-browser mock and never touch the real servers.
-  if (tokenStore.get()?.demo) {
-    const params = new URLSearchParams(
-      Object.entries(query ?? {})
-        .filter(([, v]) => v !== undefined && v !== null && v !== "")
-        .map(([k, v]) => [k, String(v)]),
-    );
-    return (await demoRequest(method, path, params, body)) as T;
-  }
 
   const qs = query
     ? "?" +
