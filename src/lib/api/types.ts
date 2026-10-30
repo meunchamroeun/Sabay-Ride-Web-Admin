@@ -112,7 +112,11 @@ export interface AppNotification {
   body?: string;
   message?: string;
   read?: boolean;
+  isRead?: boolean;
   readAt?: string | null;
+  bookingId?: string;
+  shopId?: string;
+  paymentId?: string;
   createdAt?: string;
   [key: string]: unknown;
 }

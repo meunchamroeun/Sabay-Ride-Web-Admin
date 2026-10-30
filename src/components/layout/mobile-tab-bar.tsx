@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import {
+  Bell,
   BookOpenText,
   CalendarCheck,
   ChartColumn,
@@ -49,6 +50,7 @@ const MORE: Tab[] = [
   { href: "/reports", key: "reports", icon: ChartColumn },
   { href: "/audit", key: "audit", icon: ScrollText },
   { href: "/blog", key: "blog", icon: BookOpenText },
+  { href: "/notifications", key: "notifications", icon: Bell },
   { href: "/profile", key: "profile", icon: UserRound },
 ];
 const PENDING = new Set<string>(["bookings", "motorbikes", "users", "reports", "audit", "blog"]);

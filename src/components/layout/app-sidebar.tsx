@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
+  Bell,
   BookOpenText,
   CalendarCheck,
   ChartColumn,
@@ -87,7 +88,14 @@ export function AppSidebar() {
         { href: "/blog", key: "blog", icon: BookOpenText, soon: !isApiReady("blog") },
       ],
     },
-    { key: "account", label: t("nav.account"), items: [{ href: "/profile", key: "profile", icon: UserRound }] },
+    {
+      key: "account",
+      label: t("nav.account"),
+      items: [
+        { href: "/notifications", key: "notifications", icon: Bell },
+        { href: "/profile", key: "profile", icon: UserRound },
+      ],
+    },
   ];
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));

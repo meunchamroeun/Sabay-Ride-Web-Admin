@@ -24,12 +24,17 @@ export function notificationDate(n: AppNotification): string | undefined {
   return str(n.createdAt) ?? str(n.sentAt) ?? str(n.timestamp);
 }
 
-/** Admin page an event belongs to, from its type (e.g. PAYOUT_FAILED → /payouts). */
+/** Admin page an event belongs to, from its type or ID. */
 export function notificationHref(n: AppNotification): string | undefined {
+  if (n.bookingId) return `/bookings?open=${n.bookingId}`;
+  if (n.shopId) return `/shops?open=${n.shopId}`;
   const type = `${n.type ?? n.event ?? ""}`.toUpperCase();
   if (type.includes("PAYOUT") || type.includes("PAYMENT")) return "/payouts";
   if (type.includes("SHOP")) return "/shops";
+  if (type.includes("BOOKING")) return "/bookings";
   if (type.includes("REVIEW")) return "/reviews";
+  if (type.includes("MOTORBIKE")) return "/motorbikes";
+  if (type.includes("USER")) return "/users";
   return undefined;
 }
 
